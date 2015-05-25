@@ -1,0 +1,9 @@
+defaults:
+  - 
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "default"
+      author: "Jacob Maples"
+      
