@@ -1,0 +1,301 @@
+---
+title: Graphing with Google Charts
+---
+
+<html>
+  <head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="{{site.url}}/javascripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      function daysToMilliseconds(days) {
+    	return days * 24 * 60 * 60 * 1000;
+	  }
+
+      // Load the Visualization API and the piechart package.
+      //google.load('visualization', '1.0', {'packages':['corechart']});
+      google.load("visualization", "1.1", {'packages':['corechart',"gantt"]});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      //google.setOnLoadCallback(drawChart);
+      
+      // common function
+      function getContent(prefix) {
+      	var o = {};
+        // Create the data table.
+        o.data = JSON.parse(document.getElementById(prefix+'_data').value);        
+        // Set chart options
+        o.options = {"width":400,"height":300,"chartArea":{"width":360,"height":260}};
+        var opt = JSON.parse(document.getElementById(prefix+'_options').value);
+        for (var i in opt) { o.options[i] = opt[i]; }
+        // get chart divider
+        o.chart = document.getElementById(prefix+'_chart');
+        // check for extra parameters
+        if (o.options.hasOwnProperty('js')) {
+        	// add columns for horizontal lines
+        	if (o.options.js.hasOwnProperty('hline')) {
+        		if (!o.options.hasOwnProperty('series')) { o.options.series = {}; }
+        		for (var i=0; i < o.options.js.hline.length; i++) {
+        			var y = o.options.js.hline[i];
+        			o.data[0].push('line');//''+y);
+        			for (var r=1; r < o.data.length; r++) {
+        				o.data[r].push(y);
+        			}
+        			// format extra lines
+        			o.options.series[o.data[0].length-2] = {'color':'#404040','lineDashStyle':[8,4],'lineWidth':1,'visibleInLegend':false};
+        		}				        		
+        	}
+        }        
+        console.log(prefix, o);
+        return o;
+      }      
+      
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawPieChart(prefix) {
+        // Create the data table.
+        var o = getContent(prefix);
+        var data = google.visualization.arrayToDataTable(o.data);
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.PieChart(o.chart);
+        chart.draw(data, o.options);
+      }
+      function drawScatterChart(prefix) {
+        // Create the data table.
+        var o = getContent(prefix);
+        var data = google.visualization.arrayToDataTable(o.data);
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.ScatterChart(o.chart);
+        chart.draw(data, o.options);
+        // test "Material Design" Scatter Chart
+        //chart.draw(data, google.charts.Scatter.convertOptions(o.options));
+      }
+      function drawHistogram(prefix) {
+        // Create the data table.
+        var o = getContent(prefix);
+        var data = google.visualization.arrayToDataTable(o.data);
+        // sort the data so that the bins are ordered nicely
+        var view = new google.visualization.DataView(data);
+        view.setRows(view.getSortedRows([{"column":1,"desc":true},{"column":0,"desc":true}]));
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.Histogram(o.chart);
+        chart.draw(view, o.options);
+      }          
+      function drawLineChart(prefix) {
+        // Create the data table.
+        var o = getContent(prefix);        
+        var data = google.visualization.arrayToDataTable(o.data);
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.LineChart(o.chart);
+        chart.draw(data, o.options);
+      }
+      function drawGanttChart(prefix) {
+        // Create the data table.
+        var o = getContent(prefix);        
+        //var data = google.visualization.arrayToDataTable(o.data);
+		
+        var data = new google.visualization.DataTable();
+		data.addColumn('string', 'Task ID');
+		data.addColumn('string', 'Task Name');
+		data.addColumn('date', 'Start Date');
+		data.addColumn('date', 'End Date');
+		data.addColumn('number', 'Duration');
+		data.addColumn('number', 'Percent Complete');
+		data.addColumn('string', 'Dependencies');
+		
+		data.addRows([
+		['Research', 'Find sources',
+		 new Date(2015, 0, 1), new Date(2015, 0, 5), null,  100,  null],
+		['Write', 'Write paper',
+		 null, new Date(2015, 0, 9), daysToMilliseconds(3), 25, 'Research,Outline'],
+		['Cite', 'Create bibliography',
+		 null, new Date(2015, 0, 7), daysToMilliseconds(1), 20, 'Research'],
+		['Complete', 'Hand in paper',
+		 null, new Date(2015, 0, 10), daysToMilliseconds(1), 0, 'Cite,Write'],
+		['Outline', 'Outline paper',
+		 null, new Date(2015, 0, 6), daysToMilliseconds(1), 100, 'Research']
+		]);
+		
+		var chart = new google.visualization.GanttChart(o.chart);		
+		chart.draw(data, o.options);
+      }
+      // https://developers.google.com/chart/interactive/docs/gallery/intervals#area-intervals
+      // https://developers.google.com/chart/interactive/docs/gallery/table
+      // https://developers.google.com/chart/interactive/docs/gallery/combochart
+      // # of connections between CCA's / components?
+      // https://developers.google.com/chart/interactive/docs/gallery/sankey#multilevel-sankeys
+      // Show FTE loading over time?
+      // https://developers.google.com/chart/interactive/docs/gallery/calendar
+      
+    </script>
+  </head>
+
+  <body>
+ 	<p>Jump to examples:</p>
+ 	<div>
+ 		<ul>
+ 			<li><a href="#ex_pie">Pie Chart</a></li>
+ 			<li><a href="#ex_scatter">Scatter Chart</a></li>
+ 			<li><a href="#ex_hist">Histogram</a></li>
+ 			<li><a href="#ex_line">Line Graph</a></li>
+ 			<!--li><a href="#ex_gantt">Gantt Chart</a></li-->
+ 		</ul>
+ 	</div>
+  	<h2><a href="https://developers.google.com/chart/interactive/docs/gallery"><span>Google Chart Gallery</span></a></h2>
+  	<div>
+		<div style="float:left;width:220px;">
+			<ul>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/annotationchart"><span>Annotation Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/areachart"><span>Area Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/barchart"><span>Bar Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/bubblechart"><span>Bubble Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/calendar"><span>Calendar Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart"><span>Candlestick Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/columnchart"><span>Column Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/combochart"><span>Combo Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/diffchart"><span>Diff Charts</span></a></li>
+			</ul>
+		</div>
+		<div style="float:left;width:220px;">
+			<ul>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/piechart#donut"><span>Donut Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/gauge"><span>Gauge Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/geochart"><span>Geo Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/histogram"><span>Histograms</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/intervals"><span>Intervals</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/linechart"><span>Line Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/map"><span>Maps</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/orgchart"><span>Org Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/piechart"><span>Pie Charts</span></a></li>
+			</ul>
+		</div>
+		<div style="float:clear;">
+			<ul>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/sankey"><span>Sankey Diagrams</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/scatterchart"><span>Scatter Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/steppedareachart"><span>Stepped Area Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/table"><span>Table Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/timeline"><span>Timelines</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/treemap"><span>Tree Map Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/trendlines"><span>Trendlines</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart#Waterfall"><span>Waterfall Charts</span></a></li>
+				<li><a href="https://developers.google.com/chart/interactive/docs/gallery/wordtree"><span>Word Trees</span></a></li>
+			</ul>
+		</div>
+		<!--
+		<li><a href="https://developers.google.com/chart/interactive/docs/examples"><span>Miscellaneous Examples</span></a></li>
+		<li><a><span>How to Draw Charts</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/drawing_charts"><span>Introduction</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/drawing_charts#chart.draw"><span>chart.<wbr>draw()</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/drawing_charts#chartwrapper"><span>ChartWrapper</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/basic_interactivity"><span>Add Interactivity</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/spreadsheets"><span>How to Use Spreadsheets with Charts</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/printing"><span>How to Print PNGs</span></a></li>
+		<li><a><span>Advanced Usage</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/customizing_charts"><span>How to Customize Charts</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/customizing_axes"><span>Axis Options</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/dev/"><span>How to Create a New Chart Type</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/crosshairs"><span>Crosshairs</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/reference#formatters"><span>Formatters</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/lines"><span>Lines</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/overlays"><span>Overlays</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/points"><span>Points</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/customizing_tooltip_content"><span>Tooltips</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/general_dev_tools"><span>Development Tools</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/library_loading_enhancements"><span>Library Loading in Depth</span></a></li>
+		<li><a><span>Interacting with Charts</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/events"><span>Events</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/animation"><span>Animation</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/gallery/controls"><span>Controls and Dashboards</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/gallery/toolbar"><span>Toolbars</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/reference#google_visualization_charteditor"><span>ChartEditor</span></a></li>
+		<li><a><span>Chart Data</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/datatables_dataviews"><span>DataTables and DataViews</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/roles"><span>Data Roles</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/datesandtimes"><span>Dates and Times</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/php_example"><span>How to Connect Your Database</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/queries"><span>Ingest Chart Data from Other Sources</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/spreadsheets"><span>Ingest Data from Google Sheets</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/fusiontables"><span>Ingest Data from Fusion Tables</span></a></li>
+		<li><a href="https://developers.google.com/chart/interactive/docs/dev/implementing_data_source"><span>How to Implement a New Type of Datasource</span></a></li>
+		<li><a><span><span>Related Chart Tools</span></span><span><span aria-label="Deprecated" data-tooltip-align="b,c"></span></span></a></li>
+		<li><a href="https://developers.google.com/chart/image/"><span>Image Charts</span></a></li>
+		<li><a href="https://developers.google.com/chart/infographics/"><span>Infographics (<wbr>Pins,<wbr> Icons,<wbr> etc.)</span></a></li></ul>
+		-->
+	</div>
+	
+  	<h2>Examples</h2>
+  	<div class="example">
+		<h3 id="ex_pie">Pie Chart</h3>
+		<form>
+			<textarea id="pie_data" rows="2" cols="50">[["Task","Hours per Day"],["Work",11],["Eat",2],["Commute",2],["Watch TV",2],["Sleep",7]]</textarea>
+			<label for="pie_data">Data (JSON)</label><br>
+			<textarea id="pie_options" rows="2" cols="50">{"title":"Ooh... Pie!","slices":{"2":{"offset":0.1}}}</textarea>
+			<label for="pie_options"><a href="https://developers.google.com/chart/interactive/docs/gallery/piechart#configuration-options">Options</a> (JSON)</label>
+		</form>
+		<button onclick="drawPieChart('pie')">Plot</button>
+		<br><br>
+		<div id="pie_chart"></div>
+    </div>
+
+  	<div class="example">
+		<h3 id="ex_scatter">Scatter Chart</h3>
+		<form>
+			<textarea id="scatter_data" rows="2" cols="50">[["Age","Weight"],[8,12],[4,5.5],[11,14],[4,5],[3,3.5],[6.5,7]]</textarea>
+			<label for="scatter_data">Data (JSON)</label><br>
+			<textarea id="scatter_options" rows="4" cols="50">{"chartArea":null, "title":"Age vs. Weight comparison","hAxis":{"title":"Age"},"vAxis":{"title":"Weight"},"legend":"none", "trendlines":{"0": {"type":"linear"}},"crosshair":{"trigger":"both"}}</textarea>
+			<label for="scatter_options"><a href="https://developers.google.com/chart/interactive/docs/gallery/scatterchart#configuration-options">Options</a> (JSON)</label>
+		</form>
+		<button onclick="drawScatterChart('scatter')">Plot</button>
+		<br><br>
+		<div id="scatter_chart"></div>
+    </div>
+
+    <div class="example">
+      	<h3 id="ex_hist">Histogram</h3>
+		<!-- <li><a href="#ex_hist">Histogram</a></li> -->
+		<form>
+			<textarea id="hist_data" rows="6" cols="50">[["Dinosaur","Length"],["Acrocanthosaurus (top-spined lizard)",12.2],["Albertosaurus (Alberta lizard)",9.1],["Allosaurus (other lizard)",12.2],["Apatosaurus (deceptive lizard)",22.9],["Archaeopteryx (ancient wing)",0.9],["Argentinosaurus (Argentina lizard)",36.6],["Baryonyx (heavy claws)",9.1],["Brachiosaurus (arm lizard)",30.5],["Ceratosaurus (horned lizard)",6.1],["Coelophysis (hollow form)",2.7],["Compsognathus (elegant jaw)",0.9],["Deinonychus (terrible claw)",2.7],["Diplodocus (double beam)",27.1],["Dromicelomimus (emu mimic)",3.4],["Gallimimus (fowl mimic)",5.5],["Mamenchisaurus (Mamenchi lizard)",21],["Megalosaurus (big lizard)",7.9],["Microvenator (small hunter)",1.2],["Ornithomimus (bird mimic)",4.6],["Oviraptor (egg robber)",1.5],["Plateosaurus (flat lizard)",7.9],["Sauronithoides (narrow-clawed lizard)",2],["Seismosaurus (tremor lizard)",45.7],["Spinosaurus (spiny lizard)",12.2],["Supersaurus (super lizard)",30.5],["Tyrannosaurus (tyrant lizard)",15.2],["Ultrasaurus (ultra lizard)",30.5],["Velociraptor (swift robber)",1.8]]</textarea>
+			<label for="hist_data">Data (JSON)</label><br>
+			<textarea id="hist_options" rows="4" cols="50">{"chartArea":null,"hAxis":{"title":"Length [m]"},"vAxis":{"title":"Dinosaurs"},"legend":{"position":"none"}}</textarea>
+			<label for="hist_options"><a href="https://google-developers.appspot.com/chart/interactive/docs/gallery/histogram#configuration-options">Options</a> (JSON)</label>
+		</form>
+		<button onclick="drawHistogram('hist')">Plot</button>
+		<br><br>
+		<div id="hist_chart"></div>
+    </div>
+
+    <div class="example">
+      	<h3 id="ex_line">Line Graph</h3>
+		<!-- <li><a href="#ex_line">Line Graph</a></li> -->
+		<form>
+			<textarea id="line_data" rows="6" cols="50">[["X","Dogs","Cats"],[0,0.0,0.0],[1,0.10,0.05],[2,0.23,0.15],[3,0.17,0.09],[4,0.18,0.10],[5,0.09,0.05],[6,0.11,0.03],[7,0.27,0.19],[8,0.33,0.25],[9,0.40,0.32],[10,0.32,0.24],[11,0.35,0.27],[12,0.30,0.22],[13,0.40,0.32],[14,0.42,0.34],[15,0.47,0.39],[16,0.44,0.36],[17,0.48,0.40],[18,0.52,0.44],[19,0.54,0.46],[20,0.42,0.34],[21,0.55,0.47],[22,0.56,0.48],[23,0.57,0.49],[24,0.60,0.52],[25,0.50,0.42],[26,0.52,0.44],[27,0.51,0.43],[28,0.49,0.41],[29,0.53,0.45],[30,0.55,0.47],[31,0.60,0.52],[32,0.61,0.53],[33,0.59,0.51],[34,0.62,0.54],[35,0.65,0.57],[36,0.62,0.54],[37,0.58,0.50],[38,0.55,0.47],[39,0.61,0.53],[40,0.64,0.56],[41,0.65,0.57],[42,0.63,0.55],[43,0.66,0.58],[44,0.67,0.59],[45,0.69,0.61],[46,0.69,0.61],[47,0.70,0.62],[48,0.72,0.64],[49,0.68,0.60],[50,0.66,0.58],[51,0.65,0.57],[52,0.67,0.59],[53,0.70,0.62],[54,0.71,0.63],[55,0.72,0.64],[56,0.73,0.65],[57,0.75,0.67],[58,0.70,0.62],[59,0.68,0.60],[60,0.64,0.56],[61,0.60,0.52],[62,0.65,0.57],[63,0.67,0.59],[64,0.68,0.60],[65,0.69,0.61],[66,0.70,0.62],[67,0.72,0.64],[68,0.75,0.67],[69,0.80,0.72]]</textarea>
+			<label for="line_data">Data (JSON)</label><br>
+			<textarea id="line_options" rows="4" cols="50">{"js":{"hline":[0.75]},"chartArea":null,"hAxis":{},"vAxis":{"title":"Popularity","format":"percent"},"crosshair":{"trigger":"both"},"explorer":{"axis":"horizontal","keepInBounds":true}}</textarea>
+			<label for="line_options"><a href="https://developers.google.com/chart/interactive/docs/gallery/linechart#configuration-options">Options</a> (JSON)</label>
+		</form>
+		<button onclick="drawLineChart('line')">Plot</button>
+		<br><br>
+		<div id="line_chart"></div>
+    </div>
+
+<!--<div class="example">
+      	<h3 id="ex_gantt">Gantt Chart</h3>
+-->
+		<!-- <li><a href="#ex_gantt">Gantt Chart</a></li> -->
+<!--
+		<form>
+			<textarea id="gantt_data" rows="6" cols="50">[["X","Dogs","Cats"],[0,0.0,0.0],[1,0.10,0.05],[2,0.23,0.15],[3,0.17,0.09],[4,0.18,0.10],[5,0.09,0.05],[6,0.11,0.03],[7,0.27,0.19],[8,0.33,0.25],[9,0.40,0.32],[10,0.32,0.24],[11,0.35,0.27],[12,0.30,0.22],[13,0.40,0.32],[14,0.42,0.34],[15,0.47,0.39],[16,0.44,0.36],[17,0.48,0.40],[18,0.52,0.44],[19,0.54,0.46],[20,0.42,0.34],[21,0.55,0.47],[22,0.56,0.48],[23,0.57,0.49],[24,0.60,0.52],[25,0.50,0.42],[26,0.52,0.44],[27,0.51,0.43],[28,0.49,0.41],[29,0.53,0.45],[30,0.55,0.47],[31,0.60,0.52],[32,0.61,0.53],[33,0.59,0.51],[34,0.62,0.54],[35,0.65,0.57],[36,0.62,0.54],[37,0.58,0.50],[38,0.55,0.47],[39,0.61,0.53],[40,0.64,0.56],[41,0.65,0.57],[42,0.63,0.55],[43,0.66,0.58],[44,0.67,0.59],[45,0.69,0.61],[46,0.69,0.61],[47,0.70,0.62],[48,0.72,0.64],[49,0.68,0.60],[50,0.66,0.58],[51,0.65,0.57],[52,0.67,0.59],[53,0.70,0.62],[54,0.71,0.63],[55,0.72,0.64],[56,0.73,0.65],[57,0.75,0.67],[58,0.70,0.62],[59,0.68,0.60],[60,0.64,0.56],[61,0.60,0.52],[62,0.65,0.57],[63,0.67,0.59],[64,0.68,0.60],[65,0.69,0.61],[66,0.70,0.62],[67,0.72,0.64],[68,0.75,0.67],[69,0.80,0.72]]</textarea>
+			<label for="gantt_data">Data (JSON)</label><br>
+			<textarea id="gantt_options" rows="4" cols="50">{"chartArea":null}</textarea>
+			<label for="gantt_options"><a href="https://developers.google.com/chart/interactive/docs/gallery/ganttchart#configuration-options">Options</a> (JSON)</label>
+		</form>
+		<button onclick="drawGanttChart('gantt')">Plot</button>
+		<br><br>
+		<div id="gantt_chart"></div>
+-->
+    </div>
+        
+  </body>
+</html>
