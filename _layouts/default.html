@@ -6,9 +6,10 @@
     <title>Ooh&hellip; {{ page.title }}</title>
     <link rel="stylesheet" href="/stylesheets/styles.css">
     <link rel="stylesheet" href="/stylesheets/github-dark.css">
-    <link rel="stylesheet" href="/stylesheets/jimaples.css"
+    <link rel="stylesheet" href="/stylesheets/jimaples.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
+    <script src="/javascripts/respond.js"></script>
+    <script src="/javascripts/jimaples.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -37,8 +38,15 @@
 			</div>
 			
 			<!-- Clear floats so that following elements appear below -->
-			<div style="clear:both"></div>
+			<div style="clear:both"></div>			
 		</div><!-- end header -->
+		
+		<div id="quotes">
+			<table><tbody><tr>
+				<td id="quotelink"><a href="https://www.reddit.com/r/showerthoughts" target="_blank">/r/showerthoughts</a></td>
+				<td id="quotetext">Some Alligators can grow up to 14 feet but most only have 4.</td>
+			</tr></tbody></table>
+		</div>
 		
 		<div class="wrapper">
 		  {{ content }}
