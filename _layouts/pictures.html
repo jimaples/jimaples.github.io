@@ -1,0 +1,23 @@
+---
+layout: default
+---
+{{ content }}
+
+{% if page.via %}
+<p style="margin-bottom:0;">via {{ page.via }}</p>
+{% endif %}
+
+<div class="flipY divider">
+	<img src="/images/div.png">
+</div>
+{% assign thumbnails = page.pictures | split: "," %}
+<div style="text-align:center; margin: 15px 0 10px;">
+{% for url in thumbnails %}
+  <img class="thumbnail" src="{{ url }}" height="125">
+{% endfor %}
+</div>
+<div class="divider">
+	<img src="/images/div.png">
+</div>
+
+<img id="pic" src="{{ thumbnails[0] }}" width="650">
