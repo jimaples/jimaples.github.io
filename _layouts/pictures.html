@@ -1,12 +1,14 @@
 ---
 layout: default
 ---
+<p id="updated">Updated: {{ page.path | file_date | date_to_string }}</p>
+
 {{ content }}
 
 {% if page.via %}
 <p style="margin-bottom:0;">via {{ page.via }}</p>
 {% endif %}
-
+		  
 <div class="flipY divider">
 	<img src="/images/div.png">
 </div>

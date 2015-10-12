@@ -2,15 +2,59 @@
 layout: default
 title: Shiny!
 ---
-<h2>Posts</h2>
-<ul id="posts">
-{% for post in site.posts %}
-  <li class="post-{{ post.category }}">
-  {% if post.external_url == nil %}
-    <a href="{{ post.url }}">{{ post.title }}</a><abbr>{{ post.date | date_to_string }}</abbr>
-  {% else %}
-    <a href="{{ post.external_url }}">{{ post.title }}</a><abbr>{{ post.date | date_to_string }}</abbr>
-  {% endif %}
-  </li>
-{% endfor %}
-</ul>
+<h2 style="margin-bottom: -0.5em;">Posts</h2>
+<div id="by-modified">
+	<p style="text-align: right; margin-bottom: 0px;"><a class="post-date">Date Modified</a></p>
+	{% capture mposts %}
+	  {% for post in site.posts %}
+		|{{ post.path | file_date }}#{{ post.title }}
+	  	{% if post.category == nil %}
+			#default
+		{% else %}
+			#{{ post.category }}
+		{% endif %}
+	  	{% if post.external_url == nil %}
+			#{{ post.url }}
+		{% else %}
+			#{{ post.external_url }}
+		{% endif %}
+	  	{% if post.via %}
+			#{{ post.via }}
+		{% endif %}		
+	  {% endfor %}
+	{% endcapture %}
+	{% assign sortedposts = mposts | split: '|' | sort | reverse %}	
+	<ul class="posts">
+	{% for post in sortedposts %}
+		{% assign postitems = post | split: '#' %}
+		{% if postitems[1] != nil %}
+			<li class="post-{{ postitems[2] }}">
+				<a href="{{ postitems[3] }}">{{ postitems[1] }}</a>
+				{% if postitems[4] != nil %}
+					 <span>( {{ postitems[4] }} )</span>
+				{% endif %}				
+				<abbr>{{ postitems[0] | date_to_string }}</abbr>
+			</li>
+		{% endif %}
+	{% endfor %}
+	</ul>
+</div>
+
+<div id="by-subject" style="display:none;">
+	<p style="text-align: right; margin-bottom: 0px;"><a class="post-date">Topic Date</a></p>	
+	<ul class="posts">
+	{% for post in site.posts %}
+	  <li class="post-{{ post.category }}">
+	  {% if post.external_url == nil %}
+	  	<a href="{{ post.url }}">{{ post.title }}</a>
+	  	{% if post.via %}
+			 <span>({{ post.via }})</span>
+		{% endif %}
+		<abbr>{{ post.date | date_to_string }}</abbr>
+	  {% else %}
+		<a href="{{ post.external_url }}">{{ post.title }}</a><abbr>{{ post.date | date_to_string }}</abbr>
+	  {% endif %}
+	  </li>
+	{% endfor %}
+	</ul>
+</div>

@@ -36,6 +36,21 @@ new_quote = function() {
 $('#quotes').ready(load_quotes);
 $(window).resize(resize_quote);
 
+// index.html layout functions ////////////////////////////////////////////
+sort_date = function(by_post_date) {
+	console.log('sort_date ',by_post_date);
+	if (by_post_date) {
+		$('#by-modified')[0].style.display = 'none';
+		$('#by-subject')[0].style.display = 'block';
+	} else {
+		$('#by-subject')[0].style.display = 'none';
+		$('#by-modified')[0].style.display = 'block';
+	}
+}
+
+$('#by-modified').ready(function(){ $('#by-modified a')[0].setAttribute('onclick', 'sort_date(1);'); });
+$('#by-subject').ready(function(){ $('#by-subject a')[0].setAttribute('onclick', 'sort_date(0);'); });
+
 // pictures.html layout functions ////////////////////////////////////////////
 $('#pic').ready(function() {
 	var e = $('.thumbnail');

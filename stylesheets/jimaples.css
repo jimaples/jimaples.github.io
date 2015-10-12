@@ -47,7 +47,11 @@
 	line-height: 1.7;	
 }
 
-#posts abbr {
+.posts abbr {
+	float:right;
+}
+
+#updated {
 	float:right;
 }
 
@@ -69,8 +73,8 @@
     -ms-filter: "FlipV";
 }
 
-.flipY img {
-	vertical-align: bottom;
+.divider img {
+	vertical-align: top;
 }
 
 #pic {
