@@ -14,7 +14,7 @@ title: Spiritual Assessment Survey
         updateText = function(input) {
             var st = surveytext[input.val()]
             //console.log('updateText', input, st);
-            input.next('label').children('span').html(st);
+            input.parent().next().children('label').children('span').html(st);
             
             // check if score button can be enabled
             var state = '';
@@ -56,8 +56,8 @@ title: Spiritual Assessment Survey
                 var e = $('input[name="q'+categories[k].join('"],[name="q')+'"]');
                 // look up the results
                 results[k] = [];
-                e.each(function(idx, obj){ results[k].push( {val:parseInt(answer_string ? answer_string.slice(idx,idx+1) : this.value), 
-                                                                            q:$(this).next('label').text(), object:this}); }) ;
+                e.each(function(idx, obj){ results[k].push( {val:parseInt(answer_string ? answer_string.slice(idx,idx+1) : this.value), object:this, 
+                                                                            num:this.name.slice(1), q:$(this).parent().next().children('label').text() }); }) ;
                 // sort the results by value
                 results[k].sort(function(a,b){ if (a.val < b.val) { return -1; } if (a.val > b.val)  { return 1; } return 0; });
             }
@@ -75,12 +75,12 @@ title: Spiritual Assessment Survey
                 $('#results').remove();
                 var s = '<div id="results"><br><p><b>Spiritual Assessment Survey</b>: '+Date()+'</p>';
                 s += '<p>Print to PDF to keep a record of this result.</p>';
-                $(document.body).append(s+'<table id="legend"></table></div>');                
+                $('.instructions').parent().append(s+'<div id="legend"><table></table></div></div>');                
                 var l = $('#results table').last();
-                var html = '<tr><td class="score">x</td><td>Survey</td><td>'+answers.Survey+'</td>'; 
-                l.append(html+'</tr>').after('<br><table></table>');                
+                var html = '<tr><td class="score">#</td><td>Survey</td><td>'+answers.Survey+'</td>'; 
+                l.append(html+'</tr>').parent().after('<br><div style="overflow-x:scroll"><table></table></div><br>');                
 
-                var t = $('#results table').last();                
+                var t = $('#results table').last();
                 var s = '<td colspan="5" width="5em" class="grid"';
                 var html = '<tr><td><b>Gift</b></td><td></td>'; 
                 html += s+' title="Not at all characteristic of me/definitely untrue for me">5</td>';
@@ -92,7 +92,7 @@ title: Spiritual Assessment Survey
             } else {
                 var l = $('#results table').first();
                 var i = l.children().length;
-                var html = '<tr class="score'+i+'"><td class="score">x</td><td>'+(description || 'Survey'+(i+1))+'</td><td>'+answer_string+'</td>'; 
+                var html = '<tr class="score'+i+'"><td class="score">#</td><td>'+(description || 'Survey'+(i+1))+'</td><td>'+answer_string+'</td>'; 
                 l.append(html+'</tr>');
                 
                 var t = $('#results table');
@@ -106,7 +106,7 @@ title: Spiritual Assessment Survey
                 var leftover=25;
                 for (var i=0; i  < r[k].length; i++) {     
                     var o = r[k][i];
-                    html += '<td colspan="'+o.val+'" class="score" title="'+o.q+'">&lt;&gt;</td>';
+                    html += '<td colspan="'+o.val+'" class="score" title="'+o.q+'">'+o.num+'</td>';
                     leftover -= o.val
                 }
                 // total assessment
@@ -129,7 +129,7 @@ title: Spiritual Assessment Survey
             }
             if (create_table) {
                 // empty row for spacing
-                t.append('<tr>'+'<td class="hidden">&lt;&gt;</td>'.repeat(26)+'</tr>');
+                t.append('<tr>'+'<td class="hidden">|</td>'.repeat(26)+'</tr>');
             }
         }
 
@@ -152,30 +152,30 @@ title: Spiritual Assessment Survey
     <style>
         .instructions { border: 1px solid black;
                             border-radius: 20px;
-                            background-color: #eee;
-                            padding: 0 20px; }
+                            background-color: #444;
+                            padding: 20px 20px 0 20px; }
         
         .score { border: 1px solid black;
                     border-radius: 0.3em; 
-                    color: #eee;
-                    background-color: #eee; }
+                    padding: 0;
+                    background-color: #999; 
+                    text-align: center;
+                    vertical-align: middle !important;
+                    font-style: italic;
+                    font-size: x-small; }
 
-        .score1 .score { color: #fdd;
-              background-color: #fdd; }
+        .score1 .score { background-color: #f66; }
 
-        .score2 .score { color: #dfd;
-              background-color: #dfd; }
+        .score2 .score { background-color: #6f6; }
 
-        .score3 .score { color: #ddf;
-              background-color: #ddf; }
+        .score3 .score { background-color: #66f; }
               
-        .hidden { border: 1px solid white;
-                     color: white;
-                     border-radius: 0.3em; }
+        .hidden { border: none; 
+                     color: #202020; }
 
         .grid { font-weight:bold; 
                   text-align: right;
-                  border-right:1px dashed black; }
+                  border-right:1px dashed #999; }
                     
         .right { text-align: right; }
         
@@ -183,8 +183,11 @@ title: Spiritual Assessment Survey
         
         #results td[rowspan] { border-top: 1px solid black; }
         
-        #legend td { padding: 0 10px; }
+        #legend { overflow-x: scroll; }
 
+        #legend td { padding: 0 10px; }
+        
+        input[type="range"] { margin-right: 10px; }        
     </style>
   </head>
 
@@ -205,12 +208,12 @@ title: Spiritual Assessment Survey
          <input type="range" name="ex4" min="0" max="5" value="4" disabled="true">
          <label for="ex4">Most of the time this would describe me/be true for me</label><br>
          <input type="range" name="ex3" min="0" max="5" value="3" disabled="true">
-         <label for="ex3">Frequently characteristic of me/true for me - about 50 percent of the time</label><br>
+         <label for="ex3">Frequently characteristic of me/true for me - about 50%</label><br>
          <input type="range" name="ex2" min="0" max="5" value="2" disabled="true">
-         <label for="ex2">Occasionally characteristic of me/true for me - about 25 percent of the time</label><br>
+         <label for="ex2">Occasionally characteristic of me/true for me - about 25%</label><br>
          <input type="range" name="ex1" min="0" max="5" value="1" disabled="true">
          <label for="ex1">Not at all characteristic of me/definitely untrue for me</label>
-         <div class="right">from <a href="http://www.lifeway.com/Article/Women-Leadership-Spiritual-gifts-growth-service">Lifeway Christian Resources</a></div>
+         <br><div class="right">from <a href="http://www.lifeway.com/Article/Women-Leadership-Spiritual-gifts-growth-service">Lifeway Christian Resources</a></div>
          <br>
     </div>
     <!--div>
@@ -218,87 +221,89 @@ title: Spiritual Assessment Survey
     </div -->
     <div>
         <br>
-        <input type="range" name="q01"><label for="q01">01. I <span class="placeholder"></span>have the ability to organize ideas, resources, time, and people effectively.</label><br>
-        <input type="range" name="q02"><label for="q02">02. I am <span class="placeholder"></span>willing to study and prepare for the task of teaching.</label><br>
-        <input type="range" name="q03"><label for="q03">03. I am <span class="placeholder"></span>able to relate the truths of God to specific situations.</label><br>
-        <input type="range" name="q04"><label for="q04">04. I <span class="placeholder"></span>have a God-given ability to help others grow in their faith.</label><br>
-        <input type="range" name="q05"><label for="q05">05. I <span class="placeholder"></span>possess a special ability to communicate the truth of salvation.</label><br>
-        <input type="range" name="q06"><label for="q06">06. I <span class="placeholder"></span>have the ability to make critical decisions when necessary.</label><br>
-        <input type="range" name="q07"><label for="q07">07. I am <span class="placeholder"></span>sensitive to the hurts of people.</label><br>
-        <input type="range" name="q08"><label for="q08">08. I <span class="placeholder"></span>experience joy in meeting needs through sharing possessions.</label><br>
-        <input type="range" name="q09"><label for="q09">09. I <span class="placeholder"></span>enjoy studying.</label><br>
-        <input type="range" name="q10"><label for="q10">10. I have <span class="placeholder"></span>delivered God's message of warning and judgment.</label><br>
-        <input type="range" name="q11"><label for="q11">11. I am <span class="placeholder"></span>able to sense the true motivation of persons and movements.</label><br>
-        <input type="range" name="q12"><label for="q12">12. I <span class="placeholder"></span>have a special ability to trust God in difficult situations.</label><br>
-        <input type="range" name="q13"><label for="q13">13. I <span class="placeholder"></span>have a strong desire to contribute to the establishment of new churches.</label><br>
-        <input type="range" name="q14"><label for="q14">14. I <span class="placeholder"></span>take action to meet physical and practical needs rather than merely talking about or planning to help.</label><br>
-        <input type="range" name="q15"><label for="q15">15. I <span class="placeholder"></span>enjoy entertaining guests in my home.</label><br>
-        <input type="range" name="q16"><label for="q16">16. I can <span class="placeholder"></span>adapt my guidance to fit the maturity of those working with me.</label><br>
-        <input type="range" name="q17"><label for="q17">17. I can <span class="placeholder"></span>delegate and assign meaningful work.</label><br>
-        <input type="range" name="q18"><label for="q18">18. I <span class="placeholder"></span>have an ability and desire to teach.</label><br>
-        <input type="range" name="q19"><label for="q19">19. I am <span class="placeholder"></span>able to analyze a situation correctly.</label><br>
-        <input type="range" name="q20"><label for="q20">20. I <span class="placeholder"></span>have a natural tendency to encourage others.</label><br>
-        <input type="range" name="q21"><label for="q21">21. I am <span class="placeholder"></span>willing to take the initiative in helping other Christians grow in their faith.</label><br>
-        <input type="range" name="q22"><label for="q22">22. I <span class="placeholder"></span>have an acute awareness of the emotions of other people, such as loneliness, pain, fear, and anger.</label><br>
-        <input type="range" name="q23"><label for="q23">23. I am <span class="placeholder"></span>a cheerful giver.</label><br>
-        <input type="range" name="q24"><label for="q24">24. I <span class="placeholder"></span>spend time digging into facts.</label><br>
-        <input type="range" name="q25"><label for="q25">25. I <span class="placeholder"></span>feel that I have a message from God to deliver to others.</label><br>
-        <input type="range" name="q26"><label for="q26">26. I can <span class="placeholder"></span>recognize when a person is genuine/honest.</label><br>
-        <input type="range" name="q27"><label for="q27">27. I am <span class="placeholder"></span>a person of vision (a clear mental portrait of a preferable future given by God). I am <span class="placeholder"></span>able to communicate vision in such a way that others commit to making the vision a reality.</label><br>
-        <input type="range" name="q28"><label for="q28">28. I am <span class="placeholder"></span>willing to yield to God's will rather than question and waver.</label><br>
-        <input type="range" name="q29"><label for="q29">29. I would <span class="placeholder"></span>like to be more active in getting the gospel to people in other lands.</label><br>
-        <input type="range" name="q30"><label for="q30">30. It <span class="placeholder"></span>makes me happy to do things for people in need.</label><br>
-        <input type="range" name="q31"><label for="q31">31. I am <span class="placeholder"></span>successful in getting a group to do its work joyfully.</label><br>
-        <input type="range" name="q32"><label for="q32">32. I am <span class="placeholder"></span>able to make strangers feel at ease.</label><br>
-        <input type="range" name="q33"><label for="q33">33. I <span class="placeholder"></span>have the ability to plan learning approaches.</label><br>
-        <input type="range" name="q34"><label for="q34">34. I can <span class="placeholder"></span>identify those who need encouragement.</label><br>
-        <input type="range" name="q35"><label for="q35">35. I have <span class="placeholder"></span>trained Christians to be more obedient disciples of Christ.</label><br>
-        <input type="range" name="q36"><label for="q36">36. I am <span class="placeholder"></span>willing to do whatever it takes to see others come to Christ.</label><br>
-        <input type="range" name="q37"><label for="q37">37. I am <span class="placeholder"></span>attracted to people who are hurting.</label><br>
-        <input type="range" name="q38"><label for="q38">38. I am <span class="placeholder"></span>a generous giver.</label><br>
-        <input type="range" name="q39"><label for="q39">39. I am <span class="placeholder"></span>able to discover new truths.</label><br>
-        <input type="range" name="q40"><label for="q40">40. I <span class="placeholder"></span>have spiritual insights from Scripture concerning issues and people that compel me to speak out.</label><br>
-        <input type="range" name="q41"><label for="q41">41. I can <span class="placeholder"></span>sense when a person is acting in accord with God's will.</label><br>
-        <input type="range" name="q42"><label for="q42">42. I can <span class="placeholder"></span>trust in God even when things look dark.</label><br>
-        <input type="range" name="q43"><label for="q43">43. I can <span class="placeholder"></span>determine where God wants a group to go and help it get there.</label><br>
-        <input type="range" name="q44"><label for="q44">44. I <span class="placeholder"></span>have a strong desire to take the gospel to places where it has never been heard.</label><br>
-        <input type="range" name="q45"><label for="q45">45. I <span class="placeholder"></span>enjoy reaching out to new people in my church and community.</label><br>
-        <input type="range" name="q46"><label for="q46">46. I am <span class="placeholder"></span>sensitive to the needs of people.</label><br>
-        <input type="range" name="q47"><label for="q47">47. I am <span class="placeholder"></span>able to make effective and efficient plans for accomplishing the goals of a group.</label><br>
-        <input type="range" name="q48"><label for="q48">48. I am <span class="placeholder"></span>consulted when fellow Christians are struggling to make difficult decisions.</label><br>
-        <input type="range" name="q49"><label for="q49">49. I <span class="placeholder"></span>think about how I can comfort and encourage others in my congregation.</label><br>
-        <input type="range" name="q50"><label for="q50">50. I am <span class="placeholder"></span>able to give spiritual direction to others.</label><br>
-        <input type="range" name="q51"><label for="q51">51. I am <span class="placeholder"></span>able to present the gospel to lost persons in such a way that they accept the Lord and His salvation.</label><br>
-        <input type="range" name="q52"><label for="q52">52. I <span class="placeholder"></span>possess an unusual capacity to understand the feelings of those in distress.</label><br>
-        <input type="range" name="q53"><label for="q53">53. I <span class="placeholder"></span>have a strong sense of stewardship based on the recognition that God owns all things.</label><br>
-        <input type="range" name="q54"><label for="q54">54. I have <span class="placeholder"></span>delivered to other persons messages that have come directly from God.</label><br>
-        <input type="range" name="q55"><label for="q55">55. I can <span class="placeholder"></span>sense when a person is acting under God's leadership.</label><br>
-        <input type="range" name="q56"><label for="q56">56. I <span class="placeholder"></span>try to be in God's will continually and be available for His use.</label><br>
-        <input type="range" name="q57"><label for="q57">57. I <span class="placeholder"></span>feel that I should take the gospel to people who have different beliefs from me.</label><br>
-        <input type="range" name="q58"><label for="q58">58. I <span class="placeholder"></span>have an acute awareness of the physical needs of others.</label><br>
-        <input type="range" name="q59"><label for="q59">59. I am <span class="placeholder"></span>skilled in setting forth positive and precise steps of action.</label><br>
-        <input type="range" name="q60"><label for="q60">60. I <span class="placeholder"></span>like to meet visitors at church and make them feel welcome.</label><br>
-        <input type="range" name="q61"><label for="q61">61. I <span class="placeholder"></span>explain Scripture in such a way that others understand it.</label><br>
-        <input type="range" name="q62"><label for="q62">62. I can <span class="placeholder"></span>see spiritual solutions to problems.</label><br>
-        <input type="range" name="q63"><label for="q63">63. I <span class="placeholder"></span>welcome opportunities to help people who need comfort, consolation, encouragement, and counseling.</label><br>
-        <input type="range" name="q64"><label for="q64">64. I <span class="placeholder"></span>feel at ease in sharing Christ with nonbelievers.</label><br>
-        <input type="range" name="q65"><label for="q65">65. I can <span class="placeholder"></span>influence others to perform to their highest God-given potential.</label><br>
-        <input type="range" name="q66"><label for="q66">66. I <span class="placeholder"></span>recognize the signs of stress and distress in others.</label><br>
-        <input type="range" name="q67"><label for="q67">67. I <span class="placeholder"></span>desire to give generously and unpretentiously to worthwhile projects and ministries.</label><br>
-        <input type="range" name="q68"><label for="q68">68. I can <span class="placeholder"></span>organize facts into meaningful relationships.</label><br>
-        <input type="range" name="q69"><label for="q69">69. God <span class="placeholder"></span>gives me messages to deliver to His people.</label><br>
-        <input type="range" name="q70"><label for="q70">70. I am <span class="placeholder"></span>able to sense whether people are being honest when they tell of their religious experiences.</label><br>
-        <input type="range" name="q71"><label for="q71">71. I <span class="placeholder"></span>enjoy presenting the gospel to persons of other cultures and backgrounds.</label><br>
-        <input type="range" name="q72"><label for="q72">72. I <span class="placeholder"></span>enjoy doing little things that help people.</label><br>
-        <input type="range" name="q73"><label for="q73">73. I can <span class="placeholder"></span>give a clear, uncomplicated presentation.</label><br>
-        <input type="range" name="q74"><label for="q74">74. I have <span class="placeholder"></span>been able to apply biblical truth to the specific needs of my church.</label><br>
-        <input type="range" name="q75"><label for="q75">75. God has <span class="placeholder"></span>used me to encourage others to live Christlike lives.</label><br>
-        <input type="range" name="q76"><label for="q76">76. I have <span class="placeholder"></span>sensed the need to help other people become more effective in their ministries.</label><br>
-        <input type="range" name="q77"><label for="q77">77. I <span class="placeholder"></span>like to talk about Jesus to those who do not know Him.</label><br>
-        <input type="range" name="q78"><label for="q78">78. I <span class="placeholder"></span>have the ability to make strangers feel comfortable in my home.</label><br>
-        <input type="range" name="q79"><label for="q79">79. I <span class="placeholder"></span>have a wide range of study resources and know how to secure information.</label><br>
-        <input type="range" name="q80"><label for="q80">80. I <span class="placeholder"></span>feel assured that a situation will change for the glory of God even when the situation seem impossible.</label><br>
-        <br><button name="score" disabled="true" onclick="showResults()">80 questions remaining</button>
+        <table>
+            <tr><td><input type="range" name="q01"></td><td><label for="q01">01. I <span class="placeholder"></span>have the ability to organize ideas, resources, time, and people effectively.</label></td></tr>
+            <tr><td><input type="range" name="q02"></td><td><label for="q02">02. I am <span class="placeholder"></span>willing to study and prepare for the task of teaching.</label></td></tr>
+            <tr><td><input type="range" name="q03"></td><td><label for="q03">03. I am <span class="placeholder"></span>able to relate the truths of God to specific situations.</label></td></tr>
+            <tr><td><input type="range" name="q04"></td><td><label for="q04">04. I <span class="placeholder"></span>have a God-given ability to help others grow in their faith.</label></td></tr>
+            <tr><td><input type="range" name="q05"></td><td><label for="q05">05. I <span class="placeholder"></span>possess a special ability to communicate the truth of salvation.</label></td></tr>
+            <tr><td><input type="range" name="q06"></td><td><label for="q06">06. I <span class="placeholder"></span>have the ability to make critical decisions when necessary.</label></td></tr>
+            <tr><td><input type="range" name="q07"></td><td><label for="q07">07. I am <span class="placeholder"></span>sensitive to the hurts of people.</label></td></tr>
+            <tr><td><input type="range" name="q08"></td><td><label for="q08">08. I <span class="placeholder"></span>experience joy in meeting needs through sharing possessions.</label></td></tr>
+            <tr><td><input type="range" name="q09"></td><td><label for="q09">09. I <span class="placeholder"></span>enjoy studying.</label></td></tr>
+            <tr><td><input type="range" name="q10"></td><td><label for="q10">10. I have <span class="placeholder"></span>delivered God's message of warning and judgment.</label></td></tr>
+            <tr><td><input type="range" name="q11"></td><td><label for="q11">11. I am <span class="placeholder"></span>able to sense the true motivation of persons and movements.</label></td></tr>
+            <tr><td><input type="range" name="q12"></td><td><label for="q12">12. I <span class="placeholder"></span>have a special ability to trust God in difficult situations.</label></td></tr>
+            <tr><td><input type="range" name="q13"></td><td><label for="q13">13. I <span class="placeholder"></span>have a strong desire to contribute to the establishment of new churches.</label></td></tr>
+            <tr><td><input type="range" name="q14"></td><td><label for="q14">14. I <span class="placeholder"></span>take action to meet physical and practical needs rather than merely talking about or planning to help.</label></td></tr>
+            <tr><td><input type="range" name="q15"></td><td><label for="q15">15. I <span class="placeholder"></span>enjoy entertaining guests in my home.</label></td></tr>
+            <tr><td><input type="range" name="q16"></td><td><label for="q16">16. I can <span class="placeholder"></span>adapt my guidance to fit the maturity of those working with me.</label></td></tr>
+            <tr><td><input type="range" name="q17"></td><td><label for="q17">17. I can <span class="placeholder"></span>delegate and assign meaningful work.</label></td></tr>
+            <tr><td><input type="range" name="q18"></td><td><label for="q18">18. I <span class="placeholder"></span>have an ability and desire to teach.</label></td></tr>
+            <tr><td><input type="range" name="q19"></td><td><label for="q19">19. I am <span class="placeholder"></span>able to analyze a situation correctly.</label></td></tr>
+            <tr><td><input type="range" name="q20"></td><td><label for="q20">20. I <span class="placeholder"></span>have a natural tendency to encourage others.</label></td></tr>
+            <tr><td><input type="range" name="q21"></td><td><label for="q21">21. I am <span class="placeholder"></span>willing to take the initiative in helping other Christians grow in their faith.</label></td></tr>
+            <tr><td><input type="range" name="q22"></td><td><label for="q22">22. I <span class="placeholder"></span>have an acute awareness of the emotions of other people, such as loneliness, pain, fear, and anger.</label></td></tr>
+            <tr><td><input type="range" name="q23"></td><td><label for="q23">23. I am <span class="placeholder"></span>a cheerful giver.</label></td></tr>
+            <tr><td><input type="range" name="q24"></td><td><label for="q24">24. I <span class="placeholder"></span>spend time digging into facts.</label></td></tr>
+            <tr><td><input type="range" name="q25"></td><td><label for="q25">25. I <span class="placeholder"></span>feel that I have a message from God to deliver to others.</label></td></tr>
+            <tr><td><input type="range" name="q26"></td><td><label for="q26">26. I can <span class="placeholder"></span>recognize when a person is genuine/honest.</label></td></tr>
+            <tr><td><input type="range" name="q27"></td><td><label for="q27">27. I am <span class="placeholder"></span>a person of vision (a clear mental portrait of a preferable future given by God). I am <span class="placeholder"></span>able to communicate vision in such a way that others commit to making the vision a reality.</label></td></tr>
+            <tr><td><input type="range" name="q28"></td><td><label for="q28">28. I am <span class="placeholder"></span>willing to yield to God's will rather than question and waver.</label></td></tr>
+            <tr><td><input type="range" name="q29"></td><td><label for="q29">29. I would <span class="placeholder"></span>like to be more active in getting the gospel to people in other lands.</label></td></tr>
+            <tr><td><input type="range" name="q30"></td><td><label for="q30">30. It <span class="placeholder"></span>makes me happy to do things for people in need.</label></td></tr>
+            <tr><td><input type="range" name="q31"></td><td><label for="q31">31. I am <span class="placeholder"></span>successful in getting a group to do its work joyfully.</label></td></tr>
+            <tr><td><input type="range" name="q32"></td><td><label for="q32">32. I am <span class="placeholder"></span>able to make strangers feel at ease.</label></td></tr>
+            <tr><td><input type="range" name="q33"></td><td><label for="q33">33. I <span class="placeholder"></span>have the ability to plan learning approaches.</label></td></tr>
+            <tr><td><input type="range" name="q34"></td><td><label for="q34">34. I can <span class="placeholder"></span>identify those who need encouragement.</label></td></tr>
+            <tr><td><input type="range" name="q35"></td><td><label for="q35">35. I have <span class="placeholder"></span>trained Christians to be more obedient disciples of Christ.</label></td></tr>
+            <tr><td><input type="range" name="q36"></td><td><label for="q36">36. I am <span class="placeholder"></span>willing to do whatever it takes to see others come to Christ.</label></td></tr>
+            <tr><td><input type="range" name="q37"></td><td><label for="q37">37. I am <span class="placeholder"></span>attracted to people who are hurting.</label></td></tr>
+            <tr><td><input type="range" name="q38"></td><td><label for="q38">38. I am <span class="placeholder"></span>a generous giver.</label></td></tr>
+            <tr><td><input type="range" name="q39"></td><td><label for="q39">39. I am <span class="placeholder"></span>able to discover new truths.</label></td></tr>
+            <tr><td><input type="range" name="q40"></td><td><label for="q40">40. I <span class="placeholder"></span>have spiritual insights from Scripture concerning issues and people that compel me to speak out.</label></td></tr>
+            <tr><td><input type="range" name="q41"></td><td><label for="q41">41. I can <span class="placeholder"></span>sense when a person is acting in accord with God's will.</label></td></tr>
+            <tr><td><input type="range" name="q42"></td><td><label for="q42">42. I can <span class="placeholder"></span>trust in God even when things look dark.</label></td></tr>
+            <tr><td><input type="range" name="q43"></td><td><label for="q43">43. I can <span class="placeholder"></span>determine where God wants a group to go and help it get there.</label></td></tr>
+            <tr><td><input type="range" name="q44"></td><td><label for="q44">44. I <span class="placeholder"></span>have a strong desire to take the gospel to places where it has never been heard.</label></td></tr>
+            <tr><td><input type="range" name="q45"></td><td><label for="q45">45. I <span class="placeholder"></span>enjoy reaching out to new people in my church and community.</label></td></tr>
+            <tr><td><input type="range" name="q46"></td><td><label for="q46">46. I am <span class="placeholder"></span>sensitive to the needs of people.</label></td></tr>
+            <tr><td><input type="range" name="q47"></td><td><label for="q47">47. I am <span class="placeholder"></span>able to make effective and efficient plans for accomplishing the goals of a group.</label></td></tr>
+            <tr><td><input type="range" name="q48"></td><td><label for="q48">48. I am <span class="placeholder"></span>consulted when fellow Christians are struggling to make difficult decisions.</label></td></tr>
+            <tr><td><input type="range" name="q49"></td><td><label for="q49">49. I <span class="placeholder"></span>think about how I can comfort and encourage others in my congregation.</label></td></tr>
+            <tr><td><input type="range" name="q50"></td><td><label for="q50">50. I am <span class="placeholder"></span>able to give spiritual direction to others.</label></td></tr>
+            <tr><td><input type="range" name="q51"></td><td><label for="q51">51. I am <span class="placeholder"></span>able to present the gospel to lost persons in such a way that they accept the Lord and His salvation.</label></td></tr>
+            <tr><td><input type="range" name="q52"></td><td><label for="q52">52. I <span class="placeholder"></span>possess an unusual capacity to understand the feelings of those in distress.</label></td></tr>
+            <tr><td><input type="range" name="q53"></td><td><label for="q53">53. I <span class="placeholder"></span>have a strong sense of stewardship based on the recognition that God owns all things.</label></td></tr>
+            <tr><td><input type="range" name="q54"></td><td><label for="q54">54. I have <span class="placeholder"></span>delivered to other persons messages that have come directly from God.</label></td></tr>
+            <tr><td><input type="range" name="q55"></td><td><label for="q55">55. I can <span class="placeholder"></span>sense when a person is acting under God's leadership.</label></td></tr>
+            <tr><td><input type="range" name="q56"></td><td><label for="q56">56. I <span class="placeholder"></span>try to be in God's will continually and be available for His use.</label></td></tr>
+            <tr><td><input type="range" name="q57"></td><td><label for="q57">57. I <span class="placeholder"></span>feel that I should take the gospel to people who have different beliefs from me.</label></td></tr>
+            <tr><td><input type="range" name="q58"></td><td><label for="q58">58. I <span class="placeholder"></span>have an acute awareness of the physical needs of others.</label></td></tr>
+            <tr><td><input type="range" name="q59"></td><td><label for="q59">59. I am <span class="placeholder"></span>skilled in setting forth positive and precise steps of action.</label></td></tr>
+            <tr><td><input type="range" name="q60"></td><td><label for="q60">60. I <span class="placeholder"></span>like to meet visitors at church and make them feel welcome.</label></td></tr>
+            <tr><td><input type="range" name="q61"></td><td><label for="q61">61. I <span class="placeholder"></span>explain Scripture in such a way that others understand it.</label></td></tr>
+            <tr><td><input type="range" name="q62"></td><td><label for="q62">62. I can <span class="placeholder"></span>see spiritual solutions to problems.</label></td></tr>
+            <tr><td><input type="range" name="q63"></td><td><label for="q63">63. I <span class="placeholder"></span>welcome opportunities to help people who need comfort, consolation, encouragement, and counseling.</label></td></tr>
+            <tr><td><input type="range" name="q64"></td><td><label for="q64">64. I <span class="placeholder"></span>feel at ease in sharing Christ with nonbelievers.</label></td></tr>
+            <tr><td><input type="range" name="q65"></td><td><label for="q65">65. I can <span class="placeholder"></span>influence others to perform to their highest God-given potential.</label></td></tr>
+            <tr><td><input type="range" name="q66"></td><td><label for="q66">66. I <span class="placeholder"></span>recognize the signs of stress and distress in others.</label></td></tr>
+            <tr><td><input type="range" name="q67"></td><td><label for="q67">67. I <span class="placeholder"></span>desire to give generously and unpretentiously to worthwhile projects and ministries.</label></td></tr>
+            <tr><td><input type="range" name="q68"></td><td><label for="q68">68. I can <span class="placeholder"></span>organize facts into meaningful relationships.</label></td></tr>
+            <tr><td><input type="range" name="q69"></td><td><label for="q69">69. God <span class="placeholder"></span>gives me messages to deliver to His people.</label></td></tr>
+            <tr><td><input type="range" name="q70"></td><td><label for="q70">70. I am <span class="placeholder"></span>able to sense whether people are being honest when they tell of their religious experiences.</label></td></tr>
+            <tr><td><input type="range" name="q71"></td><td><label for="q71">71. I <span class="placeholder"></span>enjoy presenting the gospel to persons of other cultures and backgrounds.</label></td></tr>
+            <tr><td><input type="range" name="q72"></td><td><label for="q72">72. I <span class="placeholder"></span>enjoy doing little things that help people.</label></td></tr>
+            <tr><td><input type="range" name="q73"></td><td><label for="q73">73. I can <span class="placeholder"></span>give a clear, uncomplicated presentation.</label></td></tr>
+            <tr><td><input type="range" name="q74"></td><td><label for="q74">74. I have <span class="placeholder"></span>been able to apply biblical truth to the specific needs of my church.</label></td></tr>
+            <tr><td><input type="range" name="q75"></td><td><label for="q75">75. God has <span class="placeholder"></span>used me to encourage others to live Christlike lives.</label></td></tr>
+            <tr><td><input type="range" name="q76"></td><td><label for="q76">76. I have <span class="placeholder"></span>sensed the need to help other people become more effective in their ministries.</label></td></tr>
+            <tr><td><input type="range" name="q77"></td><td><label for="q77">77. I <span class="placeholder"></span>like to talk about Jesus to those who do not know Him.</label></td></tr>
+            <tr><td><input type="range" name="q78"></td><td><label for="q78">78. I <span class="placeholder"></span>have the ability to make strangers feel comfortable in my home.</label></td></tr>
+            <tr><td><input type="range" name="q79"></td><td><label for="q79">79. I <span class="placeholder"></span>have a wide range of study resources and know how to secure information.</label></td></tr>
+            <tr><td><input type="range" name="q80"></td><td><label for="q80">80. I <span class="placeholder"></span>feel assured that a situation will change for the glory of God even when the situation seem impossible.</label></td></tr>
+        </table>
+        <button name="score" disabled="true" onclick="showResults()">80 questions remaining</button><br>
     </div>
     <div id="results"></div>    
   </body>

@@ -7,7 +7,7 @@ title: Shiny!
 	<p style="text-align: right; margin-bottom: 0px;"><a class="post-date">Date Modified</a></p>
 	{% capture mposts %}
 	  {% for post in site.posts %}
-		|{{ page.last_modified_at | date '%F' }}#{{ post.title }}
+		|{{ page.last_modified_at | file_date }}#{{ post.title }}
 	  	{% if post.category == nil %}
 			#default
 		{% else %}
