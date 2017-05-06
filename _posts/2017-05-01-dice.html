@@ -1,0 +1,339 @@
+---
+title: Dice Roller
+---
+
+<html>
+<head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="{{site.url}}/javascripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" href="../stylesheets/styles.css">
+    <link rel="stylesheet" href="../stylesheets/github-dark.css">
+    <link rel="stylesheet" href="../stylesheets/jimaples.css">
+    <script type="text/javascript">
+        addDie = function(e) {
+            var m;
+            if (e) {
+                m = e.prop('class').match(/column[0-9]/);
+                if (m) {
+                    var span = $('.'+m[0]+' span.dice_cnt');
+                    var i = parseInt(span.text());
+                    span.text(i+1);
+                }
+                //changeDie();
+                $('#chart_div').addClass('new_chart');
+            }
+            if (!m) {
+                console.log('addDie error', {class:e.prop('class'), e:e})
+            }
+        }
+
+        subtractDie = function(e) {
+            if (e) {
+                var span = e.find('span');
+                var i = parseInt(span.text());
+                if (i>0) { span.text(i-1); }
+                //changeDie();
+                $('#chart_div').addClass('new_chart');
+            } else {
+                console.log('subtractDie error', e)
+            }
+        }
+
+        copyArray = function(a) {
+            var b = [];
+            a.forEach(function(v){ b.push(v); });
+            return b;
+        }
+
+        getDistribution = function() {
+            var die = {};
+            var max = 0;
+            var min = 0;
+            // get current dice counts
+            $('div.dice_cnt').each(function(){
+                var i = this.textContent.split('d').map(function(s){ return parseInt(s); });
+                die[i[1]] = i[0];
+                max += i[0] * i[1];
+                min += i[0];
+            });
+            console.log('totalDie: generating probabilities from '+min+' to '+max, die);
+
+            // initialize probabilities
+            var p = [1.0]
+            var zeros = [0.0]
+            for (var i=0; i < (max-min); i++) { p.push(0.0); zeros.push(0.0); }
+
+            // calculate probabilities
+            for (var faces in die) { // 4 6 8 10 12 20
+                for (var i=0; i < die[faces]; i++) {
+                    var q = copyArray(zeros);
+
+                    // convolve the probabilities for the new die
+                    for (var j=0; j < faces; j++) { // 4 6 8 10 12 20
+                        for (var k=0; k < (max-min-j+1); k++) { //0 to max-1
+                            //if (i==0 && j==0) { console.log('  totalDie add p['+k+'] to q['+(j+k)+']'); }
+                            q[j+k] += p[k] / faces;
+                        }
+                        //if (i==0) { console.log('  totalDie '+j+': '+q.join(' '), {die:die, faces:faces, q:q, p:p}); }
+                    }
+
+                    // save the results
+                    p = q
+                }
+            }
+
+            return {min:min, max:max, distribution:p};
+        }
+
+        function changeDie() {
+            //var b = check for changes
+            var b = true;
+            if (b) {
+                var o = getDistribution();
+
+                // configure axis
+                var options = $.extend(true, local.options,
+                    {
+                      hAxis: {
+                        minValue: o.min,
+                        maxValue: o.max,
+                        ticks: [o.min]
+                      },
+                    });
+
+                // populate tick marks and data table
+                var data = local.data = [
+                    ['Value', 'P[%]'],
+                    [o.min, 1.0]
+                ];
+                for (var i=1; i < o.distribution.length; i++) {
+                    //console.log('changeDie '+i,JSON.stringify(data));
+                    options.hAxis.ticks.push(i+o.min);
+                    data.push([ i+o.min,
+                       data[i][1]-o.distribution[i-1] ]);
+                }
+
+                console.log('changeDie', JSON.stringify(data), local.chart);
+                local.chart.draw(google.visualization.arrayToDataTable(data), options);
+                $('#chart_div').removeClass('new_chart');
+            }
+        }
+
+        // initialize Google charts
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        // object for saving local variables
+        var local = {options:{}, chart:0, data:0};
+
+        function drawChart() {
+            var data = local.data = google.visualization.arrayToDataTable([
+                ['Value', 'P[%]'],
+                [ 2, 1],
+                [ 3, 0.9375],
+                [ 4, 0.8125],
+                [ 5, 0.625],
+                [ 6, 0.375],
+                [ 7, 0.1875],
+                [ 8, 0.0625]
+            ]);
+
+            // configure axis
+            var options = $.extend(true, local.options,
+                {
+                  hAxis: {
+                    minValue: 1,
+                    maxValue: 9,
+                    minorGridlines: {count:1},
+                  },
+                });
+            // initialize local chart
+            var chart = local.chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+
+            // Start the animation by listening to the first 'ready' event.
+            google.visualization.events.addOneTimeListener(chart, 'ready', function(){ console.log('  ready',this); window.setTimeout(changeDie, 200); });
+
+            // Control all other animations by listening to the 'animationfinish' event.
+            google.visualization.events.addListener(chart, 'animationfinish', function(){ console.log('  animationfinish',this); window.setTimeout(changeDie, 200); });
+
+            console.log('drawChart', chart);
+            chart.draw(data, options);
+        }
+
+        $(document).ready(function() {
+            // add / subtract functions
+            $('div[class*="dice_d"]').click(function(){ addDie($(this)); });
+            $('div.dice_cnt').click(function(){ subtractDie($(this)); });
+
+            // initialize Google Chart options
+            google.charts.localoptions = {
+              hAxis: {
+                title: 'Value',
+                minValue: 2,
+                maxValue: 8,
+                format: 'short',
+                gridlines: {color:'#444'},
+                viewWindowMode: 'maximized',
+                titleTextStyle: {color:'white'},
+                textStyle: {color:'white'}
+              },
+              vAxis: {
+                title: 'Probability of Value >= #',
+                minValue: 0,
+                maxValue: 1,
+                format:'percent',
+                gridlines: {count:5, color:'#444'},
+                minorGridlines: {count:3},
+                viewWindowMode: 'maximized',
+                titleTextStyle: {color:'white'},
+                textStyle: {color:'white'}
+              },
+              chartArea: {
+                left: 95,
+                top: 25,
+                width:'80%',
+                height:'80%',
+                backgroundColor: 'black'
+              },
+              legend: 'none',
+              lineWidth: 4,
+              curveType: 'function',
+              backgroundColor: 'none'
+            };
+
+            });
+
+        window.onload = function(){
+            // Images loaded, hide text
+            $('.placeholder').css('display','none');
+
+            //drawChart();
+        };
+
+    </script>
+    <style>
+        div[class*="column"] {
+            width: 82px;
+            overflow: hidden;
+            float: left;
+            position: absolute;
+        }
+        div[class*="dice_d"] {
+            height: 82px;
+            background-color: #444;
+            border: 1px solid black;
+            border-radius: 10px;
+            padding: 0;
+            background-image: none;
+        }
+        div[class*="dice_d"]:hover {
+            background-color: #fc0;
+            background-image: url("../images/plus.png");
+            background-repeat: no-repeat;
+        }
+
+        div.dice_cnt {
+            height: 23px;
+            border: none;
+            background-color: none;
+            text-align: center;
+            background-image: none;
+        }
+        div.dice_cnt:hover {
+            border: 1px solid black;
+            border-radius: 10px;
+            background-color: #5f0909;
+        }
+
+        /* D4  D6
+           D8  D10
+           D12 D20 */
+
+        .column1     {        left: 20px; }
+        .column1 img { margin-left: -1px; }
+
+        .column2     {        left: 108px; }
+        .column2 img { margin-left: -83px; }
+
+        .column3     {        left: 196px; }
+        .column3 img { margin-left: -166px; }
+
+        .column4     {        left: 284px; }
+        .column4 img { margin-left: -247px; }
+
+        .column5     {        left: 372px; }
+        .column5 img { margin-left: -327px; }
+
+        .column6     {        left: 460px; }
+        .column6 img { margin-left: -411px; }
+
+        .hr {
+            border-bottom: 1px solid #ffcc00;
+            margin: 20px 0 6px 0;
+        }
+
+        #chart_div { background-image: none; }
+
+        .new_chart {
+            background-image: url("../images/refresh.png");
+            background-repeat: no-repeat;
+        }
+
+    </style>
+</head>
+<body>
+<div id="main">
+<div class="wrapper">
+
+    <div>
+        <div class="dice_d4 column1">
+            <span class="placeholder">D4</span>
+            <img src="../images/Des_polyedriques.png"/>
+        </div>
+        <div class="dice_d6 column2">
+            <span class="placeholder">D6</span>
+            <img src="../images/Des_polyedriques.png"/>
+        </div>
+        <div class="dice_d8 column3">
+            <span class="placeholder">D8</span>
+            <img src="../images/Des_polyedriques.png"/>
+        </div>
+        <div class="dice_d10 column4">
+            <span class="placeholder">D10</span>
+            <img src="../images/Des_polyedriques.png"/>
+        </div>
+        <div class="dice_d12 column5">
+            <span class="placeholder">D12</span>
+            <img src="../images/Des_polyedriques.png"/>
+        </div>
+        <div class="dice_d20 column6">
+            <span class="placeholder">D20</span>
+            <img src="../images/Des_polyedriques.png"/>
+        </div>
+        <div style="float:clear; height:86px;"></div>
+    </div>
+
+    <div>
+        <div class="dice_cnt column1"><p><span class="dice_cnt">2</span>d4</p></div>
+        <div class="dice_cnt column2"><p><span class="dice_cnt">0</span>d6</p></div>
+        <div class="dice_cnt column3"><p><span class="dice_cnt">0</span>d8</p></div>
+        <div class="dice_cnt column4"><p><span class="dice_cnt">0</span>d10</p></div>
+        <div class="dice_cnt column5"><p><span class="dice_cnt">0</span>d12</p></div>
+        <div class="dice_cnt column6"><p><span class="dice_cnt">0</span>d20</p></div>
+        <div style="float:clear; height:20px;"></div>
+    </div>
+
+    <br>
+    <div id="chart_div" style="width: 100%; height: 400px;"></div>
+
+    <div>
+        <div class="hr"></div>
+        <div style="float:left;"><br>Dice image courtesy of<br><a href="https://commons.wikimedia.org/wiki/File:Des_polyedriques.svg">Wikimedia Commons</a><br></div>
+        <div style="float:clear;"><img src="../images/Des_polyedriques.png"/></div>
+    </div>
+</div>
+</div>
+</body>
+</html>
