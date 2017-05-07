@@ -8,9 +8,6 @@ title: Dice Roller
     <script type="text/javascript" src="{{site.url}}/javascripts/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <link rel="stylesheet" href="../stylesheets/styles.css">
-    <link rel="stylesheet" href="../stylesheets/github-dark.css">
-    <link rel="stylesheet" href="../stylesheets/jimaples.css">
     <script type="text/javascript">
         addDie = function(e) {
             console.log('addDie',e);
@@ -127,9 +124,7 @@ title: Dice Roller
             $('.column6 span.dice_cnt').text(die['20'] || 0);
 
             changeDie();
-        }
-        
-        replayClick = function(){ replayDie($(this)); }
+        }        
         
         changeDie = function() {
             var o = getDistribution();
@@ -272,7 +267,7 @@ title: Dice Roller
         }
         div[class*="dice_d"]:hover {
             background-color: #fc0;
-            background-image: url("../images/plus.png");
+            background-image: url("{{site.url}}/images/plus.png");
             background-repeat: no-repeat;
         }
 
@@ -319,7 +314,7 @@ title: Dice Roller
         }
 
         .new_chart {
-            background-image: url("../images/refresh.png");
+            background-image: url("{{site.url}}/images/refresh.png");
             background-repeat: no-repeat;
         }
         
@@ -338,8 +333,6 @@ title: Dice Roller
     </style>
 </head>
 <body>
-<div id="main">
-<div class="wrapper">
     
     <div id="history" style="float:right;">        
         <p>2d4</p>
@@ -349,27 +342,27 @@ title: Dice Roller
         <div>
             <div class="dice_d4 column1">
                 <span class="placeholder">D4</span>
-                <img src="../images/Des_polyedriques.png"/>
+                <img src="{{site.url}}/images/Des_polyedriques.png"/>
             </div>
             <div class="dice_d6 column2">
                 <span class="placeholder">D6</span>
-                <img src="../images/Des_polyedriques.png"/>
+                <img src="{{site.url}}/images/Des_polyedriques.png"/>
             </div>
             <div class="dice_d8 column3">
                 <span class="placeholder">D8</span>
-                <img src="../images/Des_polyedriques.png"/>
+                <img src="{{site.url}}/images/Des_polyedriques.png"/>
             </div>
             <div class="dice_d10 column4">
                 <span class="placeholder">D10</span>
-                <img src="../images/Des_polyedriques.png"/>
+                <img src="{{site.url}}/images/Des_polyedriques.png"/>
             </div>
             <div class="dice_d12 column5">
                 <span class="placeholder">D12</span>
-                <img src="../images/Des_polyedriques.png"/>
+                <img src="{{site.url}}/images/Des_polyedriques.png"/>
             </div>
             <div class="dice_d20 column6">
                 <span class="placeholder">D20</span>
-                <img src="../images/Des_polyedriques.png"/>
+                <img src="{{site.url}}/images/Des_polyedriques.png"/>
             </div>
             <div style="float:clear; height:86px;"></div>
         </div>
@@ -391,9 +384,8 @@ title: Dice Roller
     <div>
         <div class="hr"></div>
         <div style="float:left;"><br>Dice image courtesy of<br><a href="https://commons.wikimedia.org/wiki/File:Des_polyedriques.svg">Wikimedia Commons</a><br></div>
-        <div style="float:clear;"><img src="../images/Des_polyedriques.png"/></div>
+        <div style="float:clear;"><img src="{{site.url}}/images/Des_polyedriques.png"/></div>
     </div>
-</div>
-</div>
+    
 </body>
 </html>
