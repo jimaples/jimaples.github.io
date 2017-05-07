@@ -133,7 +133,7 @@ layout: default
             
             // number of minor gridlines
             var num = Math.floor((o.max-o.min)/12);
-
+            
             // configure axis
             var options = $.extend(true, local.options,
                 {
@@ -145,18 +145,35 @@ layout: default
                 });
             // new array to clear out old values
             options.hAxis.ticks = [o.min];
+            options.series = [
+                {color: '#103a7f', pointSize: 25},
+                {color: '#448cff', lineWidth: 4} 
+            ];
+              
+
+            // random value
+            var v = Math.random();
+            var j = o.distribution[0];   
+            console.log('changeDie ', v, 1-v, JSON.stringify(o.distribution));
 
             // populate tick marks and data table
             var data = [
-                ['Value', 'P[%]'],
-                [o.min, 1.0]
+                ['Value', 'Random', 'P[%]'],
+                [o.min, (v < j) ? 1.0 : null, 1.0]
             ];
             for (var i=1; i < o.distribution.length; i++) {
                 //console.log('changeDie '+i,JSON.stringify(data));
                 if (num ? (i % (num+1) == 0) : 1) options.hAxis.ticks.push(i+o.min);
-                data.push([ i+o.min,
-                   data[i][1]-o.distribution[i-1] ]);
+                
+                var j = o.distribution[i-1];                
+                data.push([ i+o.min, null, data[i][2]-j ]);                                      
+
+                // see where random number ends up on the distribution
+                if (v < j && v >= 0) data[i][1] = data[i][2];
+                v -= j;       
             }
+            // max value
+            if (v >= 0) data[i][1] = data[i][2];
 
             console.log('changeDie', JSON.stringify(data), options);
             var chart = new google.visualization.ScatterChart(local.div[0]);
@@ -192,6 +209,7 @@ layout: default
                     minorGridlines: {count:1},
                   },
                 });
+            options.series = [{color:"#448cff", lineWidth: 4}]
             // initialize local chart
             console.log('drawChart', local.div, options);
             var chart = new google.visualization.ScatterChart(local.div[0]);
@@ -237,8 +255,7 @@ layout: default
                 height:'80%',
                 backgroundColor: 'black'
               },
-              legend: 'none',
-              lineWidth: 4,
+              legend: 'none',              
               curveType: 'function',
               backgroundColor: 'none'
             };
