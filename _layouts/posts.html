@@ -1,5 +1,6 @@
 ---
 layout: default
 ---
-<p id="updated">Updated: {{ page.path | file_date | date_to_string }}</p>		
+<div id="updated">Updated: {{ page.path | file_date | date_to_string }}</div>		
+<div style="float:clear;"></div>
 {{ content }}
