@@ -40,7 +40,7 @@ title: Dice Roller
                 changeDie();
             } else {
                 console.log('subtractDie error', e)
-            }
+            } 
         }
 
         copyArray = function(a) {
@@ -53,9 +53,11 @@ title: Dice Roller
             var die = {};
             var max = 0;
             var min = 0;
+            var s = '';
             // get current dice counts
             $('div.dice_cnt').each(function(){
                 var i = this.textContent.split('d').map(function(s){ return parseInt(s); });
+                if (i[0]) s += this.textContent+' ';
                 die[i[1]] = i[0];
                 max += i[0] * i[1];
                 min += i[0];
@@ -86,46 +88,84 @@ title: Dice Roller
                 }
             }
 
-            return {min:min, max:max, distribution:p};
+            return {string:s.trim(), min:min, max:max, distribution:p};
         }
 
-        function changeDie() {
-            //var b = check for changes
-            var b = true;
-            if (b) {
-                var o = getDistribution();
-                // number of minor gridlines
-                var num = Math.floor((o.max-o.min)/12);
-
-                // configure axis
-                var options = $.extend(true, local.options,
-                    {
-                      hAxis: {
-                        minValue: o.min,
-                        maxValue: o.max,
-                        minorGridlines: {count:num}
-                      },
-                    });
-                // new array to clear out old values
-                options.hAxis.ticks = [o.min];
-
-                // populate tick marks and data table
-                var data = [
-                    ['Value', 'P[%]'],
-                    [o.min, 1.0]
-                ];
-                for (var i=1; i < o.distribution.length; i++) {
-                    //console.log('changeDie '+i,JSON.stringify(data));
-                    if (num ? (i % (num+1) == 0) : 1) options.hAxis.ticks.push(i+o.min);
-                    data.push([ i+o.min,
-                       data[i][1]-o.distribution[i-1] ]);
-                }
-
-                console.log('changeDie', JSON.stringify(data), options);
-                var chart = new google.visualization.ScatterChart(local.div[0]);
-                chart.draw(google.visualization.arrayToDataTable(data), options);
-                local.div.last().removeClass('new_chart');
+        updateHistory = function(o) {
+            var s = o.string;
+            var e = $('#history');
+            
+            // Remove string is present
+            e.children().each(function(){ if (this.innerText == s) { $(this).remove(); }});
+            
+            // else check if there are too many entries
+            var c = e.children()
+            if (c.length > 8) { c.last().remove(); }
+            
+            // Add to the top
+            e.prepend('<p>'+s+'</p>');
+            e.children().first().click(function(){ replayDie($(this)); });
+        }
+        
+        replayDie = function(e) {
+            console.log('replayDie '+e.text(),e);
+            
+            // get replay dice counts
+            var s = e.text().split(' ');
+            var die = {};
+            for (var j=0; j < s.length; j++) {
+                var i = s[j].split('d');
+                die[i[1]] = i[0];
             }
+            
+            // update values
+            $('.column1 span.dice_cnt').text(die['4'] || 0);
+            $('.column2 span.dice_cnt').text(die['6'] || 0);
+            $('.column3 span.dice_cnt').text(die['8'] || 0);
+            $('.column4 span.dice_cnt').text(die['10'] || 0);
+            $('.column5 span.dice_cnt').text(die['12'] || 0);
+            $('.column6 span.dice_cnt').text(die['20'] || 0);
+
+            changeDie();
+        }
+        
+        replayClick = function(){ replayDie($(this)); }
+        
+        changeDie = function() {
+            var o = getDistribution();
+            updateHistory(o);
+            
+            // number of minor gridlines
+            var num = Math.floor((o.max-o.min)/12);
+
+            // configure axis
+            var options = $.extend(true, local.options,
+                {
+                  hAxis: {
+                    minValue: o.min,
+                    maxValue: o.max,
+                    minorGridlines: {count:num}
+                  },
+                });
+            // new array to clear out old values
+            options.hAxis.ticks = [o.min];
+
+            // populate tick marks and data table
+            var data = [
+                ['Value', 'P[%]'],
+                [o.min, 1.0]
+            ];
+            for (var i=1; i < o.distribution.length; i++) {
+                //console.log('changeDie '+i,JSON.stringify(data));
+                if (num ? (i % (num+1) == 0) : 1) options.hAxis.ticks.push(i+o.min);
+                data.push([ i+o.min,
+                   data[i][1]-o.distribution[i-1] ]);
+            }
+
+            console.log('changeDie', JSON.stringify(data), options);
+            var chart = new google.visualization.ScatterChart(local.div[0]);
+            chart.draw(google.visualization.arrayToDataTable(data), options);
+            local.div.last().removeClass('new_chart');            
         }
 
         // initialize Google charts
@@ -166,6 +206,8 @@ title: Dice Roller
             // add / subtract functions
             $('div[class*="dice_d"]').click(function(){ addDie($(this)); });
             $('div.dice_cnt').click(function(){ subtractDie($(this)); });
+            //$('#history p').click(replayClick);            
+            $('#history p').click(function(){ replayDie($(this)); });
 
             local.div = $('.chart_div');
 
@@ -247,10 +289,6 @@ title: Dice Roller
             background-color: #5f0909;
         }
 
-        /* D4  D6
-           D8  D10
-           D12 D20 */
-
         .column1     {        left: 20px; }
         .column1 img { margin-left: -1px; }
 
@@ -284,49 +322,67 @@ title: Dice Roller
             background-image: url("../images/refresh.png");
             background-repeat: no-repeat;
         }
+        
+        #history { 
+            border-left: 1px solid #ffcc00;
+            width: 120px;
+            height: 130px;
+            padding-left: 5px;
+            white-space: nowrap;
+        }
+        
+        #history p { margin: -6px 0; }
+        
+        #history p:hover { color: #ffcc00; }
 
     </style>
 </head>
 <body>
 <div id="main">
 <div class="wrapper">
-
-    <div>
-        <div class="dice_d4 column1">
-            <span class="placeholder">D4</span>
-            <img src="../images/Des_polyedriques.png"/>
-        </div>
-        <div class="dice_d6 column2">
-            <span class="placeholder">D6</span>
-            <img src="../images/Des_polyedriques.png"/>
-        </div>
-        <div class="dice_d8 column3">
-            <span class="placeholder">D8</span>
-            <img src="../images/Des_polyedriques.png"/>
-        </div>
-        <div class="dice_d10 column4">
-            <span class="placeholder">D10</span>
-            <img src="../images/Des_polyedriques.png"/>
-        </div>
-        <div class="dice_d12 column5">
-            <span class="placeholder">D12</span>
-            <img src="../images/Des_polyedriques.png"/>
-        </div>
-        <div class="dice_d20 column6">
-            <span class="placeholder">D20</span>
-            <img src="../images/Des_polyedriques.png"/>
-        </div>
-        <div style="float:clear; height:86px;"></div>
+    
+    <div id="history" style="float:right;">        
+        <p>2d4</p>
     </div>
 
-    <div>
-        <div class="dice_cnt column1"><p><span class="dice_cnt">2</span>d4</p></div>
-        <div class="dice_cnt column2"><p><span class="dice_cnt">0</span>d6</p></div>
-        <div class="dice_cnt column3"><p><span class="dice_cnt">0</span>d8</p></div>
-        <div class="dice_cnt column4"><p><span class="dice_cnt">0</span>d10</p></div>
-        <div class="dice_cnt column5"><p><span class="dice_cnt">0</span>d12</p></div>
-        <div class="dice_cnt column6"><p><span class="dice_cnt">0</span>d20</p></div>
-        <div style="float:clear; height:20px;"></div>
+    <div style="float:clear;">
+        <div>
+            <div class="dice_d4 column1">
+                <span class="placeholder">D4</span>
+                <img src="../images/Des_polyedriques.png"/>
+            </div>
+            <div class="dice_d6 column2">
+                <span class="placeholder">D6</span>
+                <img src="../images/Des_polyedriques.png"/>
+            </div>
+            <div class="dice_d8 column3">
+                <span class="placeholder">D8</span>
+                <img src="../images/Des_polyedriques.png"/>
+            </div>
+            <div class="dice_d10 column4">
+                <span class="placeholder">D10</span>
+                <img src="../images/Des_polyedriques.png"/>
+            </div>
+            <div class="dice_d12 column5">
+                <span class="placeholder">D12</span>
+                <img src="../images/Des_polyedriques.png"/>
+            </div>
+            <div class="dice_d20 column6">
+                <span class="placeholder">D20</span>
+                <img src="../images/Des_polyedriques.png"/>
+            </div>
+            <div style="float:clear; height:86px;"></div>
+        </div>
+
+        <div>
+            <div class="dice_cnt column1"><p><span class="dice_cnt">2</span>d4</p></div>
+            <div class="dice_cnt column2"><p><span class="dice_cnt">0</span>d6</p></div>
+            <div class="dice_cnt column3"><p><span class="dice_cnt">0</span>d8</p></div>
+            <div class="dice_cnt column4"><p><span class="dice_cnt">0</span>d10</p></div>
+            <div class="dice_cnt column5"><p><span class="dice_cnt">0</span>d12</p></div>
+            <div class="dice_cnt column6"><p><span class="dice_cnt">0</span>d20</p></div>
+            <div style="float:clear; height:20px;"></div>
+        </div>
     </div>
 
     <br>
