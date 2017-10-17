@@ -1,0 +1,656 @@
+---
+title: Loan Calculator
+layout: default
+---
+
+<html>
+<head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="{{site.url}}/javascripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // initialize Google charts
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(loanAnalysis); // drawChart
+
+        // object for saving local variables
+        var local = {options:{}, chart:0, data:0, div:0, verbose:false, row:null};
+
+        function validateLoan() {
+            // all 3 number inputs are required
+            var e = $('#loans input[type="number"]');
+            var v = 1;
+            e.each(function(){ v = v && (this.value != ""); })
+
+            var b = $('#loans form [type="button"]')
+            if (local.verbose) { console.log('validateLoan', v, {inputs:e,button:b}); }
+
+            if (v) { b.removeAttr('disabled'); }
+            else   { b.attr('disabled', 'true'); }
+        }
+
+        function addLoan() {
+            //console.log('addLoan', local.row);
+            var e = $('#loans input[type!="button"]');
+            
+            var html=[];
+
+            // interest
+            html.push('<td class="column1">'+e[0].value+'%</td>');
+
+            // balance
+            var s = e[1].value;
+            if (s.length > 4) {
+                s = s.slice(0,-3)+','+s.slice(-3)
+            }
+            html.push('<td class="column2">$'+s+'</td>');
+
+            // payment
+            html.push('<td class="column3">$'+e[2].value+'</td>');
+
+            // edit
+            var tr = $('#loans table').find('tr');
+            var s = 'editLoans(this,'+tr.length+')';
+            html.push('<td class="column4"><input type="button" onclick="'+s+'" value="Edit"></td>');
+
+            // name
+            var s = e[3].value;
+            var r = local.row;
+            if (!s) { s = 'Loan '+(r ? r : $('#loans tr').length); }
+            html.push('<td class="column5">'+s+'</td>');
+
+            // delete
+            html.push('<td class="column6"><input type="button" onclick="removeLoan(this)" value="X"></td>');
+
+            // add to table
+            if (r != null) {
+                var tr = tr.slice(r, r+1); // find the row
+            } else {
+                tr.parent().append('<tr></tr>'); // add new row       
+                var tr = $('#loans table').find('tr').last();
+            }
+            var s = html.join('')
+            console.log('addLoan', local.row, s, tr);
+            tr.html(s); // update the row
+            
+            // reset the button
+            local.row = null;
+            $('#loans form input').last().val('Add');
+            
+            // update the graphs
+            loanAnalysis();
+            loanDetail();
+        }
+
+        function editLoans(e, row) {
+            var td = $(e).parent().siblings();
+            console.log('editLoans ', row, td.text());
+            
+            // Copy the loan values into the input fields
+            var i = $('#loans input[type!="button"]');
+            
+            for (var x=0; x < i.length; x++) {
+                //console.log('editLoans '+x, td.slice(x,x+1), i.slice(x,x+1));
+                var s = td.slice(x,x+1).text().replace(/[%$,]/g,'');
+                i.slice(x,x+1).val(s);
+            }
+            
+            // Update the button
+            local.row = row;
+            $('#loans form input').last().val('Update');
+        }
+
+        function removeLoan(e) {
+            var tr = $(e).parent().parent();
+            console.log('removeLoan '+tr.text(), e);
+            tr.remove();
+
+            // update the graphs
+            loanAnalysis();
+            loanDetail();
+        }
+
+        // Parse the HTML loan information into an array of loan objects
+        function readLoans() {
+            var data = [];
+            // get select rows from loan info table
+            var e = $('#loans table tr');
+            var f = e.first().children();
+
+            for (var i=0; i < e.length; i++) {
+                var o = {interest:0, balance:0, payment:0, name:'Loan '+(i+1)};
+                // select row
+                if (i) { var f = f.parent().next().children(); }
+                else   { var f = e.first().children(); }
+                if (local.verbose) { console.log('readLoans '+i+': '+f.text(), f); }
+
+                // Parse annual interest rate
+                o.interest = parseFloat(f[0].innerText)/100 + 1;
+                // Convert annual interest rate into monthly scale
+                o.interest = o.interest**(1/12);
+                // Convert dollar string to number
+                o.balance  = parseFloat(f[1].innerText.replace(/[\$,]/g,''));
+                o.payment  = parseFloat(f[2].innerText.replace(/[\$,]/g,''));
+                // Update name if provided
+                if (f[4].innerText) { o.name = f[4].innerText; }
+                // include interest & monthly payment
+                o.name += ' ('+f[2].innerText+'/mo @ '+f[0].innerText+')';
+                // assign a color
+                o.color = HSVtoRGB(i/e.length, 0.9, 0.6);
+
+                data.push(o);
+            }
+            return data;
+        }
+
+        /* accepts parameters
+         * h  Object = {h:x, s:y, v:z}
+         * OR
+         * h, s, v
+           https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
+        */
+        function HSVtoRGB(h, s, v) {
+            var r, g, b, i, f, p, q, t;
+            if (arguments.length === 1) {
+                s = h.s, v = h.v, h = h.h;
+            }
+            i = Math.floor(h * 6);
+            f = h * 6 - i;
+            p = v * (1 - s);
+            q = v * (1 - f * s);
+            t = v * (1 - (1 - f) * s);
+            switch (i % 6) {
+                case 0: r = v, g = t, b = p; break;
+                case 1: r = q, g = v, b = p; break;
+                case 2: r = p, g = v, b = t; break;
+                case 3: r = p, g = q, b = v; break;
+                case 4: r = t, g = p, b = v; break;
+                case 5: r = v, g = p, b = q; break;
+            }
+            // convert to RGB string
+            var rgb = [r,g,b].map(function(i){
+                var j = Math.round(i * 255);
+                return ((j > 15) ? '' : '0')+j.toString(16);
+            });
+
+            return '#'+rgb.join('');
+        }
+
+        function calculateLoans(loans, reverse) {
+            // First row is data headers
+            var r = ['Year'];
+            for (var i=0; i < loans.length; i++) {
+                r.push(loans[i].name);
+            }
+            var table = [r];
+
+            // Second row is initial conditions
+            var r = [0.0];
+            for (var i=0; i < loans.length; i++) {
+                r.push(loans[i].balance);
+            }
+            table.push(r);
+
+            loans.year = 0.0;
+            var payment = true;
+            while (payment) {
+                // calculate another month
+                loans.year += 1/12;
+                var r = [loans.year];
+                r.extra = loans.monthly;
+                if (loans.year == 1/12) { r.extra += loans.onetime; }
+
+                payment = 0; // accumulate payments
+                // base payments of each loan
+                for (var i=0; i < loans.length; i++) {
+                    var l = loans[i];
+                    var x = 0;
+                    if (l.balance) {
+                        x = l.balance * l.interest; // - l.payment;
+                        payment += Math.min(x, l.payment);
+                        // round balance to the nearest cent
+                        x = Math.round((x - l.payment)*100)/100;
+                        l.balance = Math.max(0, x);
+                        r.extra -= Math.min(0, x);
+                    } else {  // loan paid off!
+                        r.extra += l.payment;
+                    }
+                }
+
+                // figure out what to do with any extra
+                if (local.verbose) { console.log('calculateLoans: year '+loans.year+' extra $'+r.extra, r); }
+                if (r.extra && !Number.isNaN(reverse)) {
+                    var j = r.extra;
+                    for (var i=0; i < loans.length; i++) {
+                        var l = loans[reverse ? loans.length-1-i : i];
+                        var x = Math.min(j, l.balance);
+                        l.balance -= x;
+                        j -= x;
+                        if (j <= 0) { break; }
+                    }
+                }
+
+                // add final balance to table
+                for (var i=0; i < loans.length; i++) {
+                    var l = loans[i];
+                    // note when each loan is paid off
+                    if (!l.balance && !l.payoff) {
+                        l.payoff = loans.year;
+                        r.push(0);
+                    } else {
+                        r.push(l.balance ? l.balance : NaN);
+                    }
+                }
+                table.push(r);
+            }
+            return table;
+        }
+
+        function sortByPayoff(a, b) {
+            var x = a.balance * (a.interest-1) / a.payment;
+            var y = b.balance * (b.interest-1) / b.payment;
+            if (x > y) { return -1; }
+            if (x < y) { return 1; }
+            return 0;
+        }
+
+        function sortByBalance(a, b) {
+            if (a.balance > b.balance) { return -1; }
+            if (a.balance < b.balance) { return 1; }
+            return 0;
+        }
+
+        function sortByInterest(a, b) {
+            if (a.interest > b.interest) { return 1; }
+            if (a.interest < b.interest) { return -1; }
+            return 0;
+        }
+
+        function loanDetail() {
+            // Plot the loan details with a given loan sorter and order to use any extra payments
+
+            // Get options
+            var sortFunction = null;
+            var s = $('input[name="order"]:checked').val();
+            switch(s) {
+                case 'payoff':   sortFunction = sortByPayoff;   break;
+                case 'balance':  sortFunction = sortByBalance;  break;
+                case 'interest': sortFunction = sortByInterest; break;
+            }
+
+            var extraOrder = parseInt($('input[name="extra"]:checked').val());
+            //console.log('loanDetail', e[0].getAttribute('value'), e[1].getAttribute('value'), e);
+
+            var loans = readLoans(); // get the loans
+            // get the extras
+            var e = $('#options [type="number"]');
+            loans.onetime = parseFloat(e.first().val().replace(/[\$,]/g,''));
+            loans.monthly = parseFloat( e.last().val().replace(/[\$,]/g,''));
+
+            if (sortFunction) { loans.sort(sortFunction); }
+            if (local.verbose) { console.log('loanDetail', sortFunction, extraOrder, loans); }
+
+            // NaN = minimum payments, 0 = first->last, 1 = last->first
+            //var table = calculateLoans(loans, NaN || extraOrder);
+            var table = calculateLoans(loans, (s == 'interest' ? 1-extraOrder : extraOrder));
+            if (local.verbose) { console.log('loanDetail', table); }
+
+            var data = google.visualization.arrayToDataTable(table);
+            //https://developers.google.com/chart/interactive/docs/reference#formatters
+
+            // configure axis
+            var j = Math.ceil(table.slice(-1)[0][0]/5); // round up last year
+            var options = $.extend(true, local.options,
+                {
+                  hAxis: {
+                    minValue: 0,
+                    maxValue: j*5,
+                    minorGridlines: {count:4},
+                    gridlines: {count:j+1},
+                  },
+                  vAxis: {
+                    title: 'Total Debt',
+                  },
+                  pointSize: 0,
+                  series: loans.map(function(l){ return {color:l.color, labelInLegend:l.name}; })
+
+                });
+            // initialize local chart // https://developers.google.com/chart/interactive/docs/gallery/areachart
+            if (local.verbose) { console.log('drawChart', local.div, options); }
+            var chart = new google.visualization.AreaChart(local.div[1]);
+            chart.draw(data, options);
+        }
+
+        function payoffDates(loans, table) {
+            // get header row, minus the first column "Year"
+            var t = [ table[0].slice(1) ];
+
+            // next row is payoff dates
+            t.push( loans.map(function(l){ return l.payoff; }) );
+
+            // next row is min payments
+            t.push( loans.map(function(l){ return l.payment; }) );
+
+            var T = t[0].map(function(col, i) {
+              return t.map(function(row) {
+                return row[i]
+              })
+            });
+
+            // sort by payoff
+            T.sort(function(a, b) {
+                if (a[1] > b[1]) { return 1; }
+                if (a[1] < b[1]) { return -1; }
+                return 0;
+            });
+
+            // cumulative payment sum
+            var x = 0;
+            for (var i=T.length-1; i >= 0; i--) {
+                x += T[i][2];
+                T[i].push(x);
+            }
+
+            return T;
+        }
+
+        function loanAnalysis() {
+            // Plot the loan details with a given loan sorter and order to use any extra payments
+
+            var chart = new google.visualization.ScatterChart(local.div[0]);
+            var max_payment = 0;
+            var max_years = 0;
+            var analysis_options = $.extend(true, local.options,
+                {
+                  hAxis: {
+                    minValue: 0,
+                    minorGridlines: {count:4},
+                  },
+                  vAxis: {
+                    title: 'Minimum Monthly Payment',
+                  },
+                  curveType: 'none',
+                  lineWidth: 2,
+                  dataOpacity: 0.8,
+                  pointSize: 0,
+                  tooltip: {
+                    showColorCode: true,
+                  },
+                  legend: {
+                    position: 'top',
+                    textStyle: {color:'#ddd'},
+                  },
+                });
+
+            // sortFunction: sortByPayoff, sortByBalance, sortByInterest
+            // extraOrder: NaN = minimum payments, 0 = first->last, 1 = last->first
+            var o = [{name:'Years'}];
+            o.push({name:'Min Payment', sortFunction:null,           extraOrder:NaN, onetime:0.0, monthly:0.0});
+            o.push({name:'Shortest',    sortFunction:sortByPayoff,   extraOrder:0,   onetime:0.0, monthly:0.0});
+            o.push({name:'Longest',     sortFunction:sortByPayoff,   extraOrder:1,   onetime:0.0, monthly:0.0});
+            o.push({name:'Smallest $',  sortFunction:sortByBalance,  extraOrder:0,   onetime:0.0, monthly:0.0});
+            o.push({name:'Biggest $',   sortFunction:sortByBalance,  extraOrder:1,   onetime:0.0, monthly:0.0});
+            o.push({name:'Smallest %',  sortFunction:sortByInterest, extraOrder:0,   onetime:0.0, monthly:0.0});
+            o.push({name:'Biggest %',   sortFunction:sortByInterest, extraOrder:1,   onetime:0.0, monthly:0.0});
+            o.push({name:'$100 Extra',  sortFunction:sortByInterest, extraOrder:1,   onetime:0.0, monthly:100.0});
+            o.push({name:'$250 Extra',  sortFunction:sortByInterest, extraOrder:1,   onetime:0.0, monthly:250.0});
+
+            // table header
+            //var series = [ o.map(function(obj){ return obj.name; }) ];
+            //var r = new Array(o.length);
+            //r[0] = 0;
+            //series.push(r); // populate t=0
+            var series = {};
+            var r = new Array(o.length-1);
+            series[0] = r; // populate t=0
+
+            for (var x=1; x < o.length; x++) {
+                var loans = readLoans(); // get the loans
+                // get the extras
+                loans.onetime = o[x].onetime;
+                loans.monthly = o[x].monthly;
+
+                if (o[x].sortFunction) { loans.sort(o[x].sortFunction); }
+                //console.log('loanAnalysis '+x, o[x], loans);
+
+                var table = calculateLoans(loans, o[x].extraOrder);
+                var payoffs = payoffDates(loans, table);
+                if (local.verbose) { console.log('loanAnalysis '+x, o[x], payoffs); }
+                //console.log('loanAnalysis: '+s, table, payoffs);
+
+                // build line chart
+                for (var i=0; i < payoffs.length; i++) {
+                    // j  0: start time, 1: end time
+                    for (var j=0; j < 2; j++) {
+                        // payoffs[#] 0: loan, 1: year, 2: loan $, 3: total $
+                        if (i - j > 0) {
+                            //console.log('i='+i+' j='+j, series, payoffs);
+                            var m = Math.round(payoffs[i - j][1] * 12) + j; // round by month
+
+                            if (series[m]) { // row for this month already exists
+                                var r = series[m];
+                            } else { // create row for this month
+                                var r = new Array(o.length-1); // initialize to null
+                                series[m] = r;
+                            }
+
+                            r[x-1] = payoffs[i][3] + o[x].monthly; // cumulative $
+                        } else {
+                            // initial payment
+                            series[0][x-1] = payoffs[i][3] + o[x].onetime + o[x].monthly;
+                        }
+                    } // j = 0 or 1
+                } // i = 0 to payoffs.length-1
+
+                // show payment down to 0
+                var m = Math.round(payoffs[i-1][1] * 12) + 1; // round by month
+
+                if (series[m]) { // row for this month already exists
+                    var r = series[m];
+                } else { // create row for this month
+                    var r = new Array(o.length-1); // initialize to null
+                    series[m] = r;
+                }
+
+                r[x-1] = 0; // cumulative $
+
+            } // x = 1 to o.length
+
+            // convert the results to an array
+            var data = [ o.map(function(obj){ return obj.name; }) ];
+            for (var k in series) {  // keys automatically sorted
+                var r = series[k].unshift(k/12);
+                data.push( series[k] );
+            }
+
+            // fill in nulls
+            for (var i=1; i < o.length; i++) {
+                var x = 0;
+                for (var j=data.length-1; j >= 0; j--) {
+                    if (data[j][i]) {
+                        x = data[j][i];
+                    } else if (x) {
+                        data[j][i] = x;
+                    }
+                }
+            }
+
+            // track maximum values
+            max_payment = Math.ceil(Math.max(data[1])/250); // round up payments
+            max_years   = Math.ceil(k/12/5); // round up last year
+            if (local.verbose) { console.log('loanAnalysis', o, {series:series, data:data}); }
+
+            var dt = google.visualization.arrayToDataTable(data);
+            //https://developers.google.com/chart/interactive/docs/reference#formatters
+
+            // draw the results
+            var options = $.extend(true, analysis_options,
+                {
+                  hAxis: {
+                    maxValue: max_years*5,
+                    gridlines: {count:max_years+1},
+                  },
+                  vAxis: {
+                    maxValue: max_payment*250,
+                    gridlines: {count:max_payment+1},
+                  },
+                  series: o.slice(1).map(function(obj){ return {labelInLegend:obj.name}; }),
+                });
+            // initialize local chart // https://developers.google.com/chart/interactive/docs/gallery/areachart
+            if (local.verbose) { console.log('loanAnalysis', series, local.div, options); }
+            chart.draw(dt, options);
+        }
+
+        $(document).ready(function() {
+            // add / subtract functions
+            $('#loans input[type!="button"]').change(validateLoan);
+            $('#options [type="radio"]').change(loanDetail);
+            $('#options [type="number"]').change(loanDetail);
+            //$('#history p').click(replayClick);
+
+            local.div = $('.chart_div');
+
+            // initialize Google Chart options
+            local.options = {
+              hAxis: {
+                title: 'Years',
+                minValue: 0,
+                maxValue: 30,
+                format: 'short',
+                gridlines: {color:'#444'},
+                //viewWindowMode: 'maximized',
+                titleTextStyle: {color:'white'},
+                textStyle: {color:'white'}
+              },
+              vAxis: {
+                title: 'Total Debt ($)',
+                minValue: 0,
+                maxValue: 100000,
+                format:'$#,###',
+                gridlines: {count:5, color:'#444'},
+                minorGridlines: {count:3},
+                //viewWindowMode: 'maximized',
+                titleTextStyle: {color:'white'},
+                textStyle: {color:'white'}
+              },
+              chartArea: {
+                left: 95,
+                top: 25,
+                width:'80%',
+                height:'80%',
+                backgroundColor: 'black'
+              },
+              legend: 'none',
+              curveType: 'function',
+              backgroundColor: 'none',
+              isStacked: true
+            };
+        });
+
+        window.onload = function(){
+            // Images loaded, hide text
+            $('.placeholder').css('display','none');
+
+            loanDetail();
+        };
+
+    </script>
+    <style>
+        #options div { margin: 0 10px 0 0; }
+
+        #loans input[type="number"] { width: 14%; }
+        #loans input[type="text"]   { width: 22%; }
+
+        .chart_div {
+            background-image: none;
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Loan Information</h2>
+    <p>Provide annual interest rate, current balance, and monthly principal+interest payment(s).</p>
+    <div id="loans">
+        <form>
+            <input type="number" placeholder="Interest %" min="0" max="100"     step="0.001">
+            <input type="number" placeholder="$ Balance"  min="0" max="1000000" step="0.01">
+            <input type="number" placeholder="$ Payment"  min="0" max="10000"   step="0.01">
+            <input type="text" placeholder="Loan Name (opt.)" maxlength="50">
+            <input type="button" onclick="addLoan()" value="Add" disabled="true">
+        </form>
+        <table>
+            <tr>
+                <td class="column1">7.000%</td>
+                <td class="column2">$30,000</td>
+                <td class="column3">$300</td>
+                <td class="column4"><input type="button" onclick="editLoans(this,0)" value="Edit"></td>
+                <td class="column5">Collegee</td>
+                <td class="column6"><input type="button" onclick="removeLoan(this)" value="X"></td>
+            </tr>
+            <tr>
+                <td class="column1">2.99%</td>
+                <td class="column2">$15,000</td>
+                <td class="column3">$300</td>
+                <td class="column4"><input type="button" onclick="editLoans(this,1)" value="Edit"></td>
+                <td class="column5">Car</td>
+                <td class="column6"><input type="button" onclick="removeLoan(this)" value="X"></td>
+            </tr>
+            <tr>
+                <td class="column1">4.125%</td>
+                <td class="column2">$150,000</td>
+                <td class="column3">$600.25</td>
+                <td class="column4"><input type="button" onclick="editLoans(this,2)" value="Edit"></td>
+                <td class="column5">House</td>
+                <td class="column6"><input type="button" onclick="removeLoan(this)" value="X"></td>
+            </tr>
+        </table>
+    </div>
+
+    <h2>Loan Analysis</h2>
+    <div id="analysis">
+        <!--form>
+            <input type="button" onclick="loanAnalysis()" value="Calculate!"><br>
+        </form-->
+        <p>Comparison of various approaches to paying loans off.</p>
+    </div>
+
+    <div class="chart_div"></div>
+
+    <h2>Detailed Results</h2>
+    <div id="options">
+        <form>
+            <!-- input type="button" onclick="loanDetail()" value="Calculate!""><br -->
+            <div style="float:left;">
+                <fieldset>
+                <legend>&nbsp;Add to minimum payments&nbsp;</legend>
+                <span>One-Time Payment:</span><br>
+                <input type="number" placeholder="$ One-Time" min="0" max="1000000" step="0.01" value="0.00"><br>
+                <span>Monthly Extra:</span><br>
+                <input type="number" placeholder="$ Extra"    min="0" max="10000"   step="0.01" value="0.00"><br>
+            </div>
+            <div style="float:left;">
+                <fieldset>
+                <legend>&nbsp;Select Loan Order&nbsp;</legend>
+                <input type="radio" name="order" checked="checked" value="null"> As given<br>
+                <input type="radio" name="order" value="payoff"> Sort by duration<br>
+                <input type="radio" name="order" value="balance"> Sort by balance<br>
+                <input type="radio" name="order" value="interest"> Sort by interest
+                </fieldset>
+            </div>
+            <div style="float:clear;">
+                <fieldset>
+                <legend>&nbsp;Extra payments go to&nbsp;</legend>
+                <input type="radio" name="extra" checked="checked" value="NaN"> Savings<br>
+                <input type="radio" name="extra" value="0"> Biggest* loan<br>
+                <input type="radio" name="extra" value="1"> Smallest* loan<br>
+                <span>*Based on loan order</span>
+                </fieldset>
+            </div>
+        </form>
+    </div>
+
+    <div class="chart_div"></div>
+</body>
+</html>
