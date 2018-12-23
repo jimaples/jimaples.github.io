@@ -1,0 +1,199 @@
+---
+title: Learning Hebrew
+layout: default 
+---
+
+<html>
+<head>
+      <!--Load the AJAX API-->
+    <script type="text/javascript" src="{{site.url}}/javascripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        ///////////////////////////////////////////////////
+        moreh = {};
+
+        // Letters
+        moreh.alephbet  = 'א,ב,ג,ד,ה,ו,ז,ח,ט,י,כ,ל,מ,נ,ס,ע,פ,צ,ק,ר,ש,ת'.split(',');
+        moreh.a_first   = 'א,בּ,גּ,דּ,ה,ו,ז,ח,ט,י,כּ,ל,מ,נ,ס,ע,פּ,צ,ק,ר,ש,תּ'.split(',');
+        moreh.a_final   = 'א,ב,ג,ד,ה,ו,ז,ח,ט,י,ך,ל,ם,ן,ס,ע,ף,ץ,ק,ר,ש,ת'.split(',');
+        moreh.a_name    = ['Aleph', 'Bet'  , 'Gimel', 'Dalet', 'Hey' , 'Vav', 'Zayin' , 'Chet',
+                           'Tet'  , 'Yod'  , 'Kaf'  , 'Lamed', 'Mem' , 'Nun', 'Samech', 'Ayin',
+                           'Peh'  , 'Tsadi', 'Kof'  , 'Resh' , 'Shin', 'Tav'];
+        moreh.a_english = '›,b,g,d,h,v,z,h,t,y,k,l,m,n,s,‹,p,s,q,r,s,t'.split(',');
+
+        ///////////////////////////////////////////////////
+
+        // Vowels
+        moreh.vowels     = 'ב,בַ,בֶ,בִ,בֻ,בָ,בֵ,בֵי,בִי,בוֿ,בוּ'.split(',');
+        moreh.v_names    = ['Patah', 'Seghol', 'Hiriq Qatan', 'Qubbus', 'Qamats',
+                            'Sereh', 'Sereh' , 'Hiriq Gadol', 'Holam' , 'Shuruq'];
+        moreh.v_translit = 'a,e,i,u,a,e,e,i,o,o,u'.split(',');
+        moreh.v_word     = ('card', 'pen' , 'sit'   , 'pull', 'card',
+                            'prey', 'prey', 'marine', 'lore', 'lore', 'flute');
+
+        moreh.quiz = [];
+        moreh.quiz.push({'title'      : 'Hebrew Letter Names',
+                         'description': 'Select the name for this character:',
+                         'q'          : moreh.alephbet,
+                         'a'          : moreh.a_name});
+
+        moreh.quiz.push({'title'      : 'Hebrew Letter Transliteration',
+                         'description': 'Select the English transliteration for this character:',
+                         'q'          : moreh.alephbet,
+                         'a'          : moreh.a_english});
+
+        ///////////////////////////////////////////////////
+
+        // moreh.lookup = function(field1='', field2='', s='') {
+        //     if (typeof(s) != 'string') throw 'moreh.lookup type error! s="'+String(s)+'"';
+        //     if (!(field1 in moreh)) throw 'moreh.lookup key error! field1 '+field1+' not in '+Object.keys(moreh).join(',');
+        //     if (!(field2 in moreh)) throw 'moreh.lookup key error! field2 '+field2+' not in '+Object.keys(moreh).join(',');
+        // 
+        //     var i = moreh[field1].indexOf(s);
+        //     return moreh[field2][i];
+        // };
+
+        // Return a shuffled copy of an array
+        shuffle = function(array) {
+          var currentIndex = array.length, temporaryValue, randomIndex;
+          var out = array.map(s => s)
+
+          // While there remain elements to shuffle...
+          while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = out[currentIndex];
+            out[currentIndex] = out[randomIndex];
+            out[randomIndex] = temporaryValue;
+          }
+
+          return out;
+        };
+
+        // Setup the next question
+        moreh.next = function() {
+            // get a question off the sorted list
+            var q = moreh.q.pop();
+            $('div.question').text(q); // new question
+            
+            var a = moreh.active.a.map(s => s);
+            var i = moreh.active.q.indexOf(q);
+            moreh.a = a.splice(i,1); // correct answer
+            var a = shuffle(a); // randomize answers
+            var a = a.splice(0,3); // 3 wrong answers
+            a.push(moreh.a); // add correct answer
+            var a = shuffle(a); // randomize order
+            
+            var o = $('div.answer');
+            o.removeClass('correct wrong ignore'); // clear results
+            o.addClass('guess'); // for :hover formatting
+            for (var i = 0; i < o.length; i++) {
+                o.slice(i).text(a[i]); // possible answer
+            }
+        };
+        
+        // Check if this quiz is done
+        moreh.level = 0;
+        // negative feedback loop parameters
+        // new = (old + .increment (if correct)) * .scale
+        moreh.delete = 0.03
+        moreh.scale = 0.6
+        moreh.increment = 0.85
+        moreh.mastered  = 1.1        
+        moreh.set_quiz = function() {
+            if (moreh.q ? !moreh.q.length : 1) {
+                // TODO; check if 
+                moreh.active = moreh.quiz[moreh.level];
+                $('#q_set').text(moreh.active.title);
+                $('#q_description').text(moreh.active.description);
+                moreh.q = shuffle(moreh.active.q);
+                //moreh.a = moreh.a_name.map(s => s);
+                moreh.wrong = 0; 
+            }
+            
+            moreh.next();
+        }
+            
+        // Check if the answer is correct
+        moreh.answer = function(pick) {
+            var o = $('div.answer');            
+            o.removeClass('guess'); // disable :hover
+            for (var i = 0; i < o.length; i++) {
+                var a = o.slice(i,i+1);
+                if (a.text() == moreh.a) {
+                    a.addClass('correct');
+                } else if (a.text() == pick.text()) {
+                    moreh.wrong++;
+                    a.addClass('wrong');
+                } else {
+                    a.addClass('ignore');
+                }
+            }
+
+            timeoutID = window.setTimeout(moreh.set_quiz, 1500);
+        };
+
+        ///////////////////////////////////////////////////
+
+        window.onload = function(){
+            // Images loaded, hide text
+            $('.placeholder').css('display','none');
+
+            $('.answer').click(function(){ moreh.answer($(this)); });
+
+            // Set up question set
+            moreh.set_quiz();
+        };
+
+    </script>
+    <style>
+
+        div#quiz div { padding: 10px 10px 15px 30px; }
+        
+        div.question { font-size: xx-large; }
+        
+        p#q_description { margin: 0px; }
+
+        div.answer.guess:hover {
+            color: #ffcc00;
+            background-color: #191919;
+            border-radius: 20px;
+        }
+
+        div.wrong {
+            background-color: #660000;
+            border-radius: 20px;
+        }
+        div.correct {
+            background-color: #006600;
+            border-radius: 20px;
+        }
+        div.ignore { color:#444444; }
+
+    </style>
+</head>
+<body>
+<div id="main">
+<div class="wrapper">
+    <p id="updated">Updated: 20 December 2018</p>
+
+    <h2 id="q_set">Question Set</h2>
+    <p id="q_description">Description</p>
+    <div id="quiz">
+        <div class="question">Q</div>
+        <hr>
+        <div class="answer">A</div>
+        <div class="answer">B</div>
+        <div class="answer">C</div>
+        <div class="answer">D</div>
+    </div>
+    <br>
+</div>
+</div>
+</body>
+</html>
