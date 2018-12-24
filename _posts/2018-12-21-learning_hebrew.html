@@ -99,10 +99,10 @@ layout: default
             if (moreh.q ? !moreh.q.length : 1) {
                 console.log('set_quiz', moreh.weights);
                 // TODO; check if all questions have been mastered
+                moreh.active = moreh.quiz[moreh.level];
                 moreh.q = shuffle(moreh.active.q);
             }
             if (!moreh.weights) { // New level
-                moreh.active = moreh.quiz[moreh.level];
                 $('#q_set').text(moreh.active.title);
                 $('#q_description').text(moreh.active.description);
                 moreh.wrong = 0; 
