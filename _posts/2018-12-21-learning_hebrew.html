@@ -45,15 +45,6 @@ layout: default
 
         ///////////////////////////////////////////////////
 
-        // moreh.lookup = function(field1='', field2='', s='') {
-        //     if (typeof(s) != 'string') throw 'moreh.lookup type error! s="'+String(s)+'"';
-        //     if (!(field1 in moreh)) throw 'moreh.lookup key error! field1 '+field1+' not in '+Object.keys(moreh).join(',');
-        //     if (!(field2 in moreh)) throw 'moreh.lookup key error! field2 '+field2+' not in '+Object.keys(moreh).join(',');
-        // 
-        //     var i = moreh[field1].indexOf(s);
-        //     return moreh[field2][i];
-        // };
-
         // Return a shuffled copy of an array
         shuffle = function(array) {
           var currentIndex = array.length, temporaryValue, randomIndex;
@@ -82,7 +73,7 @@ layout: default
             $('div.question').text(q); // new question
             
             var a = moreh.active.a.map(s => s);
-            var i = moreh.active.q.indexOf(q);
+            var i = moreh.idx = moreh.active.q.indexOf(q);
             moreh.a = a.splice(i,1); // correct answer
             var a = shuffle(a); // randomize answers
             var a = a.splice(0,3); // 3 wrong answers
@@ -101,21 +92,29 @@ layout: default
         moreh.level = 0;
         // negative feedback loop parameters
         // new = (old + .increment (if correct)) * .scale
-        moreh.delete = 0.03
-        moreh.scale = 0.6
-        moreh.increment = 0.85
-        moreh.mastered  = 1.1        
+        moreh.scale = 0.7
+        moreh.increment = 1.0
+        moreh.mastered  = 2.0
         moreh.set_quiz = function() {
             if (moreh.q ? !moreh.q.length : 1) {
-                // TODO; check if 
+                console.log('set_quiz', moreh.weights);
+                // TODO; check if all questions have been mastered
+                moreh.q = shuffle(moreh.active.q);
+            }
+            if (!moreh.weights) { // New level
                 moreh.active = moreh.quiz[moreh.level];
                 $('#q_set').text(moreh.active.title);
                 $('#q_description').text(moreh.active.description);
-                moreh.q = shuffle(moreh.active.q);
-                //moreh.a = moreh.a_name.map(s => s);
                 moreh.wrong = 0; 
+                moreh.progress = [];
+                moreh.weights = [];
+                for (var i = 0; i < moreh.active.q.length; i++) {
+                    moreh.progress.push('□');
+                    moreh.weights.push(1);
+                }
             }
-            
+            $('#progress').text(moreh.progress.join(''));
+            // Set up for next question
             moreh.next();
         }
             
@@ -125,9 +124,23 @@ layout: default
             o.removeClass('guess'); // disable :hover
             for (var i = 0; i < o.length; i++) {
                 var a = o.slice(i,i+1);
-                if (a.text() == moreh.a) {
+                var s = a.text();
+                if (s == moreh.a) {
+                    // negative feedback loop parameters
+                    // new = (old + .increment (if correct)) * .scale
+                    var w = moreh.weights[moreh.idx];
+                    if (s == pick.text()) { // user was correct
+                        w += moreh.increment;
+                    }
+                    w = Math.max(0.01, w*moreh.scale);
+                    moreh.weights[moreh.idx] = w;
+                    // Check if question has been mastered
+                    if (w > moreh.mastered) {
+                        moreh.progress[i] = '■';
+                    }
+                    
                     a.addClass('correct');
-                } else if (a.text() == pick.text()) {
+                } else if (s == pick.text()) {
                     moreh.wrong++;
                     a.addClass('wrong');
                 } else {
@@ -155,9 +168,23 @@ layout: default
 
         div#quiz div { padding: 10px 10px 15px 30px; }
         
+        p#q_description { margin: 0px; }
+
         div.question { font-size: xx-large; }
         
-        p#q_description { margin: 0px; }
+        div.progress_wrapper {
+            border: 2px solid #444444;
+            border-radius: 20px;
+            padding: 4px !important; 
+            height: 2em;
+            margin-bottom: 20px;
+        }
+        table.progress_table td {
+            text-align: center;
+            border: 0px;
+        }
+        td#progress { color:#006600; }
+        
 
         div.answer.guess:hover {
             color: #ffcc00;
@@ -173,27 +200,29 @@ layout: default
             background-color: #006600;
             border-radius: 20px;
         }
-        div.ignore { color:#444444; }
+        .ignore { color:#444444; }
 
     </style>
 </head>
 <body>
-<div id="main">
-<div class="wrapper">
     <p id="updated">Updated: 20 December 2018</p>
 
     <h2 id="q_set">Question Set</h2>
     <p id="q_description">Description</p>
     <div id="quiz">
         <div class="question">Q</div>
-        <hr>
+        <div class="progress_wrapper">
+            <table class="progress_table"><tr>
+                <td id="q_prev" class="ignore">Prev</td>
+                <td id="progress"></td>
+                <td id="q_next" class="ignore">Next</td>
+            </tr></table>
+        </div>
         <div class="answer">A</div>
         <div class="answer">B</div>
         <div class="answer">C</div>
         <div class="answer">D</div>
     </div>
     <br>
-</div>
-</div>
 </body>
 </html>
