@@ -1,18 +1,18 @@
 ---
 title: Learning Hebrew
-layout: default 
+layout: default
 ---
 
 <html>
 <head>
-      <!--Load the AJAX API-->
+    <!--Load the AJAX API-->
     <script type="text/javascript" src="{{site.url}}/javascripts/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         ///////////////////////////////////////////////////
         moreh = {};
-
+        
         // Letters
         moreh.alephbet  = 'א,ב,ג,ד,ה,ו,ז,ח,ט,י,כ,ל,מ,נ,ס,ע,פ,צ,ק,ר,ש,ת'.split(',');
         moreh.a_first   = 'א,בּ,גּ,דּ,ה,ו,ז,ח,ט,י,כּ,ל,מ,נ,ס,ע,פּ,צ,ק,ר,ש,תּ'.split(',');
@@ -25,12 +25,12 @@ layout: default
         ///////////////////////////////////////////////////
 
         // Vowels
-        moreh.vowels     = 'ב,בַ,בֶ,בִ,בֻ,בָ,בֵ,בֵי,בִי,בוֿ,בוּ'.split(',');
+        moreh.vowels     = 'בַ,בֶ,בִ,בֻ,בָ,בֵ,בֵי,בִי,בוֿ,בוּ'.split(',');
         moreh.v_names    = ['Patah', 'Seghol', 'Hiriq Qatan', 'Qubbus', 'Qamats',
                             'Sereh', 'Sereh' , 'Hiriq Gadol', 'Holam' , 'Shuruq'];
         moreh.v_translit = 'a,e,i,u,a,e,e,i,o,o,u'.split(',');
-        moreh.v_word     = ('card', 'pen' , 'sit'   , 'pull', 'card',
-                            'prey', 'prey', 'marine', 'lore', 'lore', 'flute');
+        moreh.v_word     = ['a as in card', 'e as in pen' , 'i as in sit', 'u as in pull', 'a as in card',
+                            'e as in prey', 'e as in prey', 'i as in marine', 'o as in lore', 'o as in lore', 'u as in flute'];
 
         moreh.quiz = [];
         moreh.quiz.push({'title'      : 'Hebrew Letter Names',
@@ -43,6 +43,21 @@ layout: default
                          'q'          : moreh.alephbet,
                          'a'          : moreh.a_english});
 
+        moreh.quiz.push({'title'      : 'Hebrew Vowels',
+                         'description': 'Select the name for this vowel:',
+                         'q'          : moreh.vowels,
+                         'a'          : moreh.v_names});
+
+        moreh.quiz.push({'title'      : 'Hebrew Vowel Transliteration',
+                         'description': 'Select the English transliteration for this character:',
+                         'q'          : moreh.vowels,
+                         'a'          : moreh.v_word});
+
+        ///////////////////////////////////////////////////
+        
+        moreh.debug = 0;
+        // moreh.debug = 1; // set_quiz
+        // moreh.debug = 2; // incr_level
         ///////////////////////////////////////////////////
 
         // Return a shuffled copy of an array
@@ -71,7 +86,7 @@ layout: default
             // get a question off the sorted list
             var q = moreh.q.pop();
             $('div.question').text(q); // new question
-            
+
             var a = moreh.active.a.map(s => s);
             var i = moreh.idx = moreh.active.q.indexOf(q);
             moreh.a = a.splice(i,1); // correct answer
@@ -79,7 +94,7 @@ layout: default
             var a = a.splice(0,3); // 3 wrong answers
             a.push(moreh.a); // add correct answer
             var a = shuffle(a); // randomize order
-            
+
             var o = $('div.answer');
             o.removeClass('correct wrong ignore'); // clear results
             o.addClass('guess'); // for :hover formatting
@@ -87,9 +102,59 @@ layout: default
                 o.slice(i).text(a[i]); // possible answer
             }
         };
-        
+
+        ///////////////////////////////////////////////////////////////////////
         // Check if this quiz is done
         moreh.level = 0;
+        moreh.incr_level = function(o) {
+            if (o.attr('id').indexOf('prev') > 0) {
+                moreh.level = Math.max(0, moreh.level - 1);
+            } else { // next level
+                moreh.level = Math.min(moreh.quiz.length - 1, moreh.level + 1);
+                o.addClass('ignore');
+            }
+
+            // You can go back except for the first level
+            var p = $('#q_prev span');
+            if (moreh.level > 0) {
+                $('#q_prev').removeClass('ignore');
+                p.text(moreh.quiz[moreh.level - 1].title);
+                p.removeClass('hidden').addClass('tooltiptext');
+            } else {
+                $('#q_prev').addClass('ignore');
+                p.addClass('hidden').removeClass('tooltiptext');
+            }
+            
+            // You can go forward except for the last level
+            var p = $('#q_next span');
+            if (moreh.level < moreh.quiz.length - 1) {
+                $('#q_next').removeClass('ignore');
+                p.text(moreh.quiz[moreh.level + 1].title);
+                p.removeClass('hidden').addClass('tooltiptext');
+            } else {
+                $('#q_next').addClass('ignore');
+                p.addClass('hidden').removeClass('tooltiptext');
+            }
+
+            // New level
+            moreh.active = moreh.quiz[moreh.level];
+            $('#q_set').text(moreh.active.title);
+            $('#q_description').text(moreh.active.description);
+            moreh.wrong = 0;
+            moreh.progress = [];
+            moreh.weights = [];
+            moreh.q = [];
+            for (var i = 0; i < moreh.active.q.length; i++) {
+                moreh.progress.push('□');
+                moreh.weights.push(1);
+            }
+            
+            // Start level
+            if (moreh.debug > 1) console.log('incr_level', moreh);
+            moreh.set_quiz();
+        };
+
+        ///////////////////////////////////////////////////////////////////////
         // negative feedback loop parameters
         // new = (old + .increment (if correct)) * .scale
         moreh.scale = 0.7
@@ -97,30 +162,26 @@ layout: default
         moreh.mastered  = 2.0
         moreh.set_quiz = function() {
             if (moreh.q ? !moreh.q.length : 1) {
-                console.log('set_quiz', moreh.weights);
-                // TODO; check if all questions have been mastered
-                moreh.active = moreh.quiz[moreh.level];
+                if (moreh.debug > 0) console.log('set_quiz', moreh.weights);                
                 moreh.q = shuffle(moreh.active.q);
             }
-            if (!moreh.weights) { // New level
-                $('#q_set').text(moreh.active.title);
-                $('#q_description').text(moreh.active.description);
-                moreh.wrong = 0; 
-                moreh.progress = [];
-                moreh.weights = [];
-                for (var i = 0; i < moreh.active.q.length; i++) {
-                    moreh.progress.push('□');
-                    moreh.weights.push(1);
-                }
+            
+            //  check if all questions have been mastered
+            var b = 1;
+            for (var i = 0; i < moreh.weights.length; i++) {
+                if (moreh.weights[i] < moreh.mastered) b = 0;
             }
+            if (b) $('#q_next').removeClass('ignore');
+            
             $('#progress').text(moreh.progress.join(''));
             // Set up for next question
             moreh.next();
         }
-            
+
+        ///////////////////////////////////////////////////////////////////////
         // Check if the answer is correct
         moreh.answer = function(pick) {
-            var o = $('div.answer');            
+            var o = $('div.answer');
             o.removeClass('guess'); // disable :hover
             for (var i = 0; i < o.length; i++) {
                 var a = o.slice(i,i+1);
@@ -138,7 +199,7 @@ layout: default
                     if (w > moreh.mastered) {
                         moreh.progress[moreh.idx] = '■';
                     }
-                    
+
                     a.addClass('correct');
                 } else if (s == pick.text()) {
                     moreh.wrong++;
@@ -158,33 +219,41 @@ layout: default
             $('.placeholder').css('display','none');
 
             $('.answer').click(function(){ moreh.answer($(this)); });
+            $('#q_prev').click(function(){ moreh.incr_level($(this)); });
+            $('#q_next').click(function(){ moreh.incr_level($(this)); });
 
             // Set up question set
-            moreh.set_quiz();
+            moreh.level = -1;
+            moreh.incr_level($('#q_next'));
         };
 
     </script>
     <style>
-
         div#quiz div { padding: 10px 10px 15px 30px; }
-        
+
         p#q_description { margin: 0px; }
 
         div.question { font-size: xx-large; }
-        
+
         div.progress_wrapper {
             border: 2px solid #444444;
             border-radius: 20px;
-            padding: 4px !important; 
+            padding: 4px !important;
             height: 2em;
             margin-bottom: 20px;
         }
         table.progress_table td {
             text-align: center;
+            vertical-align: top;
             border: 0px;
         }
-        td#progress { color:#006600; }
-        
+        td#q_prev { width:4em; }
+        td#q_next { width:4em; }
+        td#progress { 
+            color:#006600; 
+            width:100%;
+        }
+
 
         div.answer.guess:hover {
             color: #ffcc00;
@@ -201,6 +270,42 @@ layout: default
             border-radius: 20px;
         }
         .ignore { color:#444444; }
+        
+        /* Tooltip container */
+        .tooltip {
+          position: relative;
+          display: inline-block;
+          border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+        }
+
+        /* Tooltip text */
+        .tooltip .tooltiptext {
+          visibility: hidden;
+          width: 120px;
+          background-color: black;
+          color: #fff;
+          text-align: center;
+          padding: 5px 0;
+          border-radius: 6px;
+         
+          /* Position the tooltip text - see examples below! */
+          position: absolute;
+          z-index: 1;
+        }
+
+        /* Show the tooltip text when you mouse over the tooltip container */
+        .tooltip:hover .tooltiptext {
+          visibility: visible;
+        }
+
+        .tooltip .tooltiptext {
+          width: 120px;
+          bottom: 100%;
+          left: 50%; 
+          margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+        }
+        
+        .hidden { visibility: hidden; }
 
     </style>
 </head>
@@ -213,9 +318,13 @@ layout: default
         <div class="question">Q</div>
         <div class="progress_wrapper">
             <table class="progress_table"><tr>
-                <td id="q_prev" class="ignore">Prev</td>
+                <td id="q_prev" class="tooltip">Prev
+                    <span class="tooltiptext">Tooltip text</span>
+                </td>
                 <td id="progress"></td>
-                <td id="q_next" class="ignore">Next</td>
+                <td id="q_next" class="tooltip">Next
+                    <span class="tooltiptext">Tooltip text</span>
+                </td>
             </tr></table>
         </div>
         <div class="answer">A</div>
