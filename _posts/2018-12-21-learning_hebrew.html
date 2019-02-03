@@ -32,6 +32,26 @@ layout: default
         moreh.v_word     = ['a as in card', 'e as in pen' , 'i as in sit', 'u as in pull', 'a as in card',
                             'e as in prey', 'e as in prey', 'i as in marine', 'o as in lore', 'o as in lore', 'u as in flute'];
 
+        ///////////////////////////////////////////////////
+
+        // Vocabulary (masculine)
+        moreh.vocab_m  = 'קוֺל,שָׂרֶה,שִׁיר,םֵפֶר,לַיִל,עֶרֶב,בֹּקֶר,יוֺם,בֵּן,אָב,אִישׁ,םוּם,נָבִיא,דּוֺד'.split(',').reverse();
+        moreh.m_words = ['Uncle'  , 'Prophet', 'Horse', 'Man' , 'Father', 'Son',   'Day',
+                         'Morning', 'Evening', 'Night', 'Book', 'Song'  , 'Field', 'Voice'];
+
+        // Vocabulary (feminine)
+        moreh.vocab_f  = 'בַּיִת,דֶּלֶת,רָחֵל,מְנוֺרָה,תּוֺרָה,בַּת,אֵם,אִשָׁה,סוּסָה,נְבִיאָה,דּוֺדָה'.split(',').reverse();
+        moreh.f_words = ['Aunt', 'Prophetess', 'Mare', 'Woman', 'Mother', 'Daughter', 'Law',
+                         'Candlestick / Lampstand', 'Ewe', 'Door', 'And', 'House'];
+
+        // Vocabulary (adjectives)
+        moreh.vocab_a  = 'קָדוֺשׁ,לָבָן,שָׁחוֺר,צָעִיר,יָשָׁן,זָקֵן,קָטָן,גָּדוֺל,יָפֶה,רַע,טוֺב,הַ,וְ'.split(',').reverse();
+        moreh.a_words = ['And', 'The', 'Good', 'Bad', 'Nice / Beautiful', 'Big / Large / Great',
+                         'Small', 'Old (person / being)', 'Old (thing)', 'Young', 'Black',
+                         'White', 'Holy'];
+
+        ///////////////////////////////////////////////////
+
         moreh.quiz = [];
         moreh.quiz.push({'title'      : 'Hebrew Letter Names',
                          'description': 'Select the name for this character:',
@@ -52,6 +72,36 @@ layout: default
                          'description': 'Select the English transliteration for this character:',
                          'q'          : moreh.vowels,
                          'a'          : moreh.v_word});
+
+        // moreh.quiz.push({'title'      : 'Hebrew Masculine Words',
+        //                  'description': 'Select the English transliteration for this word:',
+        //                  'q'          : moreh.vocab_m,
+        //                  'a'          : moreh.m_words});
+
+        moreh.quiz.push({'title'      : 'Hebrew Masculine Words',
+                         'description': 'Select the English translation for this word:',
+                         'q'          : moreh.vocab_m,
+                         'a'          : moreh.m_words});
+
+        // moreh.quiz.push({'title'      : 'Hebrew Feminine Words',
+        //                  'description': 'Select the English transliteration for this word:',
+        //                  'q'          : moreh.vocab_f,
+        //                  'a'          : moreh.f_words});
+
+        moreh.quiz.push({'title'      : 'Hebrew Feminine Words',
+                         'description': 'Select the English translation for this word:',
+                         'q'          : moreh.vocab_f,
+                         'a'          : moreh.f_words});
+
+        // moreh.quiz.push({'title'      : 'Hebrew Adjectives (m)',
+        //                  'description': 'Select the English transliteration for this word:',
+        //                  'q'          : moreh.vocab_a,
+        //                  'a'          : moreh.a_words});
+
+        moreh.quiz.push({'title'      : 'Hebrew Adjectives (m)',
+                         'description': 'Select the English translation for this word:',
+                         'q'          : moreh.vocab_a,
+                         'a'          : moreh.a_words});
 
         ///////////////////////////////////////////////////
         
