@@ -1,0 +1,151 @@
+---
+title: The One Ring Resources
+layout: default
+---
+
+<html>
+<head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="{{site.url}}/javascripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+		roll = function(max) {
+		  return Math.ceil(Math.random() * max);
+		}
+
+		d12 = function(extra) {
+			return roll(12);
+		}
+
+		d6 = function(num) {
+			var results = {die:[], success:0, sum:0};
+			var v = 0;
+			for (var i=0; i < num; i++) {
+				v = roll(6);
+				results.die[i] = v;
+				results.sum += v;
+				if (v == 6) results.success += 1;
+			}
+			return results;
+		}
+		
+		createPrecious = function() {
+			var s = '';
+			// Table 1: Form
+			switch(roll(6)) {
+				//   1: Jewel (single gem)
+				case 2: s = 'Brooch'; break;
+				case 3: s = 'Necklace'; break;
+				case 4:
+					switch(roll(2)) {
+						case 1: s = 'Circlet'; break;
+						case 2: s = 'Crown'; 
+					}
+					break;
+				case 5:
+					switch(roll(3)) {
+						case 1: s = 'Belt'; break;
+						case 2: s = 'Chain'; break;
+						case 3: s = 'Armband';
+					}
+					break;
+				case 6: s = 'ring';
+			}
+			// Table 2: Main Material
+			switch(roll(6)) {
+				case 1: s = 'Pearl '+s; break;
+				case 2: s = 'Sapphire '+s; break;
+				case 3: s = 'Ruby '+s; break;
+				case 4: s = 'Amethyst '+s; break;
+				case 5: 
+					switch(roll(3)) {
+						case 1: s = 'Adamant '+s; break;
+						case 2: s = 'White gem '+s; break;
+						case 3: s = 'Clear Crystal '+s;
+					}
+					break;
+				case 6: 
+					switch(roll(3)) {
+						case 1: s = 'Emerald '+s; break;
+						case 2: s = 'Green Gem '+s; break;
+						case 3: s = 'Green Crystal '+s;
+					}
+			}
+			s = s.trim(); // remove trailing space
+			// Table 3: Craftmanship
+			switch(roll(6)) {
+				case 1: s = 'Mannish '+s+' of Westernesse'; break;
+				case 2: s = 'Elven '+s+' of Eregion'; break;
+				case 3: s = 'Dwarven '+s+' of Khazad-dum'; break;
+				case 4: s = 'Dwarven '+s+' of Erebor'; break;
+				case 5: s = 'Dwarven '+s+' of Beleriand'; break;
+				case 6: s = 'Elven '+s+' of Beleriand'; 
+			}			
+			return s
+		}
+
+		appendPrecious = function() {
+			var e = $('#precious ol');
+			var s = createPrecious();
+            e.append('<li>'+s+'</li>');
+            e.children().last().click(function(){ this.remove(); });			
+		}
+
+        // object for saving local variables
+        var local = {options:{}, chart:0, data:0, div:0};
+
+        $(document).ready(function() {
+            $('#precious button').click(appendPrecious);
+        });
+
+        window.onload = function(){
+            // Images loaded, hide text
+            $('.placeholder').css('display','none');
+        };
+
+    </script>
+    <style>
+        #precious {
+            border: 1px solid #434343;
+            border-radius: 10px;
+            background-color: #191919;
+        }
+		#precious ol {
+			margin: 5px 0;
+		}
+        #precious li:hover{
+            background-color: #434343;
+		}
+
+        .hr {
+            border-bottom: 1px solid #ffcc00;
+            margin: 20px 0 6px 0;
+        }        
+    </style>
+</head>
+<body>
+    
+	<div>
+	  <span font-weight="bolder">The One Ring</span> 2nd Edition  
+	  by <a href="https://freeleaguepublishing.com/en/">/Free League</a> | 
+	  <a href="https://forum.frialigan.se/viewforum.php?f=129">Forum</a> |
+	  <a href="https://www.kickstarter.com/projects/1192053011/the-one-ring-roleplaying-game-second-edition/description">Kickstarter</a> | 
+	  LOTR <a href="https://lotr.fandom.com/wiki/">Wiki</a> |
+	  <a href="http://lotrproject.com/map/#layers=BTTTTTTTT">Map</a> | 
+	  <a href="http://lotrproject.com/timeline/#layers=BTT">Timeline</a>
+	  <br>
+	  <p>Tabletop role playing game based on Tolkien's works, set between "The Hobbit" and "The Lord of the Ring". This span is in the Third Age, between June 2942 and Sept 3001.</p>
+	</div>
+	<div class="hr"></div>
+	<br>
+    
+    <div id="precious">        
+        <button>+</button> <span title="Finely crafted family heirlooms or historical artifact">Precious Object Generator</span><br>
+		<ol>		
+		</ol>
+    </div>
+    <br>
+	
+</body>
+</html>
