@@ -29,22 +29,158 @@ layout: default
 			}
 			return results;
 		}
-		
-		createPrecious = function() {
+
+		// --------------------------------------------------------------------
+
+		// Create a random character name
+		randomName = function(race, gender) {
+			if (gender[0] == 'M') {
+				switch(race) {
+					case 'Bardings':     var names = 'Aegir,Arn,Brandulf,Domarr,Egil,Erland,Farald,Finn,Gautarr,Hafgrim,Hjalmar,Ingolf,Jofur,Kolbeinn,Leiknir,Lomund,Munan,Nari,Nefstan,Ottarr,Ragnarr,Reinald,Sigmarr,Steinarr,Thorald,Torwald,Ulfarr,Unnarr,Vandil,Varinn'.split(','); break;
+					case 'Dwarves':      var names = 'Ai,Anar,Beli,Bláin,Borin,Burin,Bruni,Farin,Flói,Frár,Frerin,Frór,Ginar,Gróin,Grór,Hanar,Hepti,Iari,Lófar,Lóni,Náli,Nár,Niping,Nói,Núr,Nýrád,Ónar,Póri,Regin,Svior,Veig,Vidar'.split(','); break;
+					case 'Elves':        var names = 'Amras,Aredhel,Beleganor,Belegon,Calanhir,Carmagor,Dagorhir,Durandir,Edrahil,Ellahir,Fincalan,Fuindor,Galdagor,Galdor,Hallas,Hirimlad,Ithildir,Lascalan,Linaith,Mablin,Malanor,Nauros,Orgalad,Pelegorn,Sargon'.split(','); break;
+					case 'Hobbits':      var names = 'Andwise,Berilac,Bungo,Cottar,Doderic,Dudo,Erling,Fastred,Ferumbras,Folco,Gorhendad,Griffo,Halfred,Hamson,Ilberic,Isembold,Isengar,Longo,Marmadas,Marroc,Mungo,Odo,Orgulas,Otho,Posco,Reginard,Robin,Rudigar,Sadoc,Saradas,Tobold,Tolman'.split(','); break;
+					case 'Men of Bree':  var names = 'Alfred,Artie,Bill,Bob,Carl,Ed,Fred,Giles,Herb,Larry,Nob,Oswald,Percy,Perry,Sid,Tom,Harry'.split(','); break;
+					case 'Rangers':      var names = 'Adrahil,Amlaith,Arvegil,Baranor,Belecthor,Bergil,Celepharn,Cirion,Damrod,Dírhael,Duinhir,Egalmoth,Eradan,Findemir,Forlong,Golasdan,Hallas,Hirluin,Ingold,Iorlas,Malvegil,Ohtar,Orodreth,Tarannon,Targon'.split(','); break;
+					default:             var names = ['Jack'];
+				}
+			} else {
+				switch(race) {
+					case 'Bardings':     var names = 'Aldis,Asfrid,Bera,Bergdis,Dagmar,Eilif,Erna,Frida,Geira,Gudrun,Halla,Hild,Ingirun,Ingrith,Lif,Linhild,Kelda,Runa,Saldis,Sigga,Sigrun,Thora,Thordis,Thorhild,Ulfhild,Ulfrun,Una,Valdis,Vigdis,Walda'.split(','); break;
+					case 'Dwarves':      var names = 'Adís,Afrid,Agda,Bersa,Birna,Dagrún,Dís,Drífa,Edda,Elin,Fenja,Frida,Geira,Gísla,Hadda,Hón,Ida,Ilmr,Jóra,Kára,Kóna,Líf,Línhild,Már,Mist,Nál,Oda,Ósk,Rán,Rinda,Sefa,Syn,Tóra,Trana,Úlfrún,Vírún,Yrr'.split(','); break;
+					case 'Elves':        var names = 'Aranel,Arbereth,Berúthiel,Baraniel,Calanril,Celenneth,Elnîth,Eraniel,Finduilas,Gilraen,Gilraeth,Gloredhel,Idril,Ioreth,Ivorwen,Lôrwend,Lothíriel,Luindîs,Meneloth,Moriel,Morwen,Narieth,Narniel,Orothêl,Tarandîs'.split(','); break;
+					case 'Hobbits':      var names = 'Adaldrida,Amaranth,Asphodel,Belba,Bell,Berylla,Camellia,Daisy,Eglantine,Estella,Gilly,Hanna,Lily,Malva,Marigold,May,Melilot,Menegilda,Mentha,Mirabella,Myrtle,Pearl,Peony,Pervinca,Pimpernel,Primrose,Primula,Prisca,Rosamunda,Ruby,Salvia'.split(','); break;
+					case 'Men of Bree':  var names = 'Daisy,Emma,Etta,Fay,Fern,Flora,Gert,Holly,Lily,Myrtle,Poppy,Rose,Sage,Tilly,Violet'.split(','); break;
+					case 'Rangers':      var names = 'Anwen,Arbereth,Berúthiel,Baraniel,Calanril,Celenneth,Elnîth,Eraniel,Finduilas,Gilraen,Gilraeth,Gloredhel,Idril,Ioreth,Ivorwen,Lôrwend,Lothíriel,Luindîs,Meneloth,Moriel,Morwen,Narieth,Narniel,Orothêl,Tarandîs'.split(','); break;
+					default:             var names = ['Jill'];
+				}
+			}
+			var i = roll(names.length);
+			var dbg = 'randomName('+race+','+gender+') '+String(i)+'='+names[i-1];
+			var s = names[i-1];
+
+			// Family names
+			if (race == 'Hobbits') {
+				var names = 'Baggins,Boffin,Bolger,Bracegirdle,Brandybuck,Brown,Brownlock,Bunce,Burrows,Cotton,Gamgee,Gardner,Goldworthy,Goodbody,Goodchild,Grubb,Headstrong,Hornblower,Maggot,Noakes,North-Tooks,Proudfoot,Puddifoot,Roper,Rumble,Sackville,Smallburrow,Took,Twofoot,Whitfoot'.split(',');
+			} else if (race == 'Men of Bree') {
+				var names = 'Appledore,Asterfire,Bellsap,Briarcleave,Butterbur,Cherryborn,Chesterstout,Droverwind,Ferny,Foxglow,Goatleaf,Hardybough,Heathertoes,Hedgedon,Kettlegrass,Lilyhawk,Mossburn,Mugworts,Oakstout,Pickthorn,Pollenroad,Rushlight,Shrubrose,Sweetroot,Thistlewool,Wayward'.split(',');
+			}
+			var i = roll(names.length);
+			dbg += ' '+String(i)+'='+names[i-1];
+			s += ' '+names[i-1];
+
+			console.log(dbg);
+			return s
+		}
+
+		// Create a random character name
+		randomFeatures = function(race) {
+			switch(race) {
+				case 'Bardings':     var names = 'Bold,Eager,Fair,Fierce,Generous,Proud,Tall,Wilful'.split(','); break;
+				case 'Dwarves':      var names = 'Cunning,Fierce,Lordly,Proud,Secretive,Stern,Wary,Wilful'.split(','); break;
+				case 'Elves':        var names = 'Fair,Keen-eyed,Lordly,Merry,Patient,Subtle,Swift,Wary'.split(','); break;
+				case 'Hobbits':      var names = 'Eager,Fair-spoken,Faithful,Honourable,Inquisitive,Keen-eyed,Merry,Rustic'.split(','); break;
+				case 'Men of Bree':  var names = 'Cunning,Fair-spoken,Faithful,Generous,Inquisitive,Patient,Rustic,True-hearted'.split(','); break;
+				case 'Rangers':      var names = 'Bold,Honourable,Secretive,Stern,Subtle,Swift,Tall,True-hearted'.split(','); break;
+				default:             var names = ['Nondescript','Generic'];
+			}
+			// Pick first feature
+			var i = roll(names.length);
+			var s = names[i-1];
+			var dbg = 'randomFeatures('+race+') '+String(i);
+			// Pick second feature
+			names.splice(i-1,1);
+			var i = roll(names.length);
+			s += ' '+names[i-1];
+			dbg += ' '+String(i)+'='+s;
+			console.log(dbg);
+			return s
+		}
+
+		// Create a random character description
+		createCharacter = function() {
+			// Lookup active races
+			var e = $('.characterSelect td.race.active');
+			if (e.length == 0) {
+				alert('The One Ring Character Generator:\nSelect at least one Heroic Culture!');
+				return;
+			}
+			var i = roll(e.length);
+			var c = {race:e[i-1].innerText}
+
+			// Lookup active callings
+			var e = $('.characterSelect td.calling.active');
+			if (e.length == 0) {
+				alert('The One Ring Character Generator:\nSelect at least one Calling!');
+				return;
+			}
+			var i = roll(e.length);
+			c['calling'] = e[i-1].innerText;
+
+			// Random gender
+			if (roll(2) == 1) {
+				c['gender'] = 'Male';
+			} else {
+				c['gender'] = 'Female';
+			}
+
+			// Random name
+			c['name'] = randomName(c['race'], c['gender']);
+
+			// Random features
+			c['features'] = randomFeatures(c['race']);
+
+			// Add calling feature
+			switch(c['calling']) {
+				case 'Captain':          c['features'] += ' Leadership'; break;
+				case 'Champion':
+					var s = 'Evil-Men-Lore,Orc-Lore,Spider-Lore,Troll-Lore,Warg-Lore,Undead-Lore'.split(',');
+					var i = roll(s.length);
+					c['features'] += ' '+s[i-1];
+					break;
+				case 'Messenger':        c['features'] += ' Folk-Lore'; break;
+				case 'Scholar':          c['features'] += ' Rhymes of Lore'; break;
+				case 'Treasure Hunter':  c['features'] += ' Burglary'; break;
+				case 'Warden':           c['features'] += ' Shadow-Lore'; break;
+			}
+
+			// Add to table
+			var e = $('#newCharacter table');
+			var tr = '<tr class="newCharacter"><td>'+c['race']+'</td><td>';
+			tr += c['calling']+'</td><td>'+c['name']+'</td><td colspan=3>';
+			tr += c['gender']+' '+c['features']+'</td></tr>';
+			e.append(tr);
+			// first children is a tbody, next children is the <tr>
+			e.children().children().last().click(function(){ this.remove(); });
+			console.log('createCharacter', c);
+			return c;
+		}
+
+		// --------------------------------------------------------------------
+
+		// Create a random precious object name
+		randomPrecious = function() {
 			var s = '';
+			var dbg = 'randomPrecious:';
 			// Table 1: Form
-			switch(roll(6)) {
+			var i = roll(6);
+			dbg += ' form '+String(i);
+			switch(i) {
 				//   1: Jewel (single gem)
 				case 2: s = 'Brooch'; break;
 				case 3: s = 'Necklace'; break;
 				case 4:
-					switch(roll(2)) {
+					var i = roll(2);
+					dbg += ' '+String(i);
+					switch(i) {
 						case 1: s = 'Circlet'; break;
-						case 2: s = 'Crown'; 
+						case 2: s = 'Crown';
 					}
 					break;
 				case 5:
-					switch(roll(3)) {
+					var i = roll(3);
+					dbg += ' '+String(i);
+					switch(i) {
 						case 1: s = 'Belt'; break;
 						case 2: s = 'Chain'; break;
 						case 3: s = 'Armband';
@@ -53,20 +189,26 @@ layout: default
 				case 6: s = 'ring';
 			}
 			// Table 2: Main Material
-			switch(roll(6)) {
+			var i = roll(6);
+			dbg += ' material '+String(i);
+			switch(i) {
 				case 1: s = 'Pearl '+s; break;
 				case 2: s = 'Sapphire '+s; break;
 				case 3: s = 'Ruby '+s; break;
 				case 4: s = 'Amethyst '+s; break;
-				case 5: 
-					switch(roll(3)) {
+				case 5:
+					var i = roll(3);
+					dbg += ' '+String(i);
+					switch(i) {
 						case 1: s = 'Adamant '+s; break;
 						case 2: s = 'White gem '+s; break;
 						case 3: s = 'Clear Crystal '+s;
 					}
 					break;
-				case 6: 
-					switch(roll(3)) {
+				case 6:
+					var i = roll(3);
+					dbg += ' '+String(i);
+					switch(i) {
 						case 1: s = 'Emerald '+s; break;
 						case 2: s = 'Green Gem '+s; break;
 						case 3: s = 'Green Crystal '+s;
@@ -74,43 +216,102 @@ layout: default
 			}
 			s = s.trim(); // remove trailing space
 			// Table 3: Craftmanship
-			switch(roll(6)) {
+			var i = roll(6);
+			dbg += ' craft '+String(i);
+			switch(i) {
 				case 1: s = 'Mannish '+s+' of Westernesse'; break;
 				case 2: s = 'Elven '+s+' of Eregion'; break;
 				case 3: s = 'Dwarven '+s+' of Khazad-dum'; break;
 				case 4: s = 'Dwarven '+s+' of Erebor'; break;
 				case 5: s = 'Dwarven '+s+' of Beleriand'; break;
-				case 6: s = 'Elven '+s+' of Beleriand'; 
-			}			
+				case 6: s = 'Elven '+s+' of Beleriand';
+			}
+			console.log(dbg+' = '+s);
 			return s
 		}
 
-		appendPrecious = function() {
+		// Append a new precious object to the list
+		createPrecious = function() {
 			var e = $('#precious ol');
-			var s = createPrecious();
+			var s = randomPrecious();
             e.append('<li>'+s+'</li>');
-            e.children().last().click(function(){ this.remove(); });			
+            e.children().last().click(function(){ this.remove(); });
+		}
+
+		// --------------------------------------------------------------------
+
+		toggleDisplay = function() {
+			// get the ordered list
+		    var l = this.parentElement.children.length - 1;
+			var e = this.parentElement.children[l];
+
+			if (this.innerText == 'Hide') {
+				this.innerText = 'Show';
+				e.classList.add('hidden');
+			} else {
+				this.innerText = 'Hide';
+				e.classList.remove('hidden');
+			}
+		}
+
+		toggleSelect = function() {
+			var s = 'active';
+		    if (this.classList.contains(s)) {
+				this.classList.remove(s);
+			} else {
+				this.classList.add(s);
+			}
 		}
 
         // object for saving local variables
         var local = {options:{}, chart:0, data:0, div:0};
 
         $(document).ready(function() {
-            $('#precious button').click(appendPrecious);
+            $('button.toggle').click(toggleDisplay);
+
+            $('#newCharacter .all').click(function(){  $('.characterSelect td').each(function(){ this.classList.add('active'); }) });
+            $('#newCharacter .none').click(function(){ $('.characterSelect td').each(function(){ this.classList.remove('active'); }) });
+            $('#newCharacter td').click(toggleSelect);
+			$('#newCharacter .create').click(createCharacter);
+
+            $('#precious .create').click(createPrecious);
         });
 
         window.onload = function(){
             // Images loaded, hide text
             $('.placeholder').css('display','none');
+			//$('.race').each(function(){ this[0].title = 'Select heroic culture(s)'; });
+			//$('.calling').each(function(){ this[0].title = 'Select calling(s)'; });
         };
 
     </script>
     <style>
-        #precious {
+        .hr {
+            border-bottom: 1px solid #ffcc00;
+            margin: 20px 0 6px 0;
+        }
+		.hidden {
+			display: none;
+		}
+        .group {
             border: 1px solid #434343;
             border-radius: 10px;
             background-color: #191919;
+			margin-bottom: 10px;
         }
+		#newCharacter .characterSelect td:hover {
+            background-color: #434343;
+		}
+		#newCharacter .characterSelect td.active {
+            background-color: #434343;
+		}
+		#newCharacter .characterSelect td.active:hover {
+            background-color: #191919;
+		}
+		.newCharacter:hover {
+			background-color: #431919;
+		}
+
 		#precious ol {
 			margin: 5px 0;
 		}
@@ -118,34 +319,57 @@ layout: default
             background-color: #434343;
 		}
 
-        .hr {
-            border-bottom: 1px solid #ffcc00;
-            margin: 20px 0 6px 0;
-        }        
     </style>
 </head>
 <body>
-    
+
 	<div>
-	  <span font-weight="bolder">The One Ring</span> 2nd Edition  
-	  by <a href="https://freeleaguepublishing.com/en/">/Free League</a> | 
+	  <span font-weight="bolder">The One Ring</span> 2nd Edition
+	  by <a href="https://freeleaguepublishing.com/en/">/Free League</a> |
 	  <a href="https://forum.frialigan.se/viewforum.php?f=129">Forum</a> |
-	  <a href="https://www.kickstarter.com/projects/1192053011/the-one-ring-roleplaying-game-second-edition/description">Kickstarter</a> | 
+	  <a href="https://www.kickstarter.com/projects/1192053011/the-one-ring-roleplaying-game-second-edition/description">Kickstarter</a> |
 	  LOTR <a href="https://lotr.fandom.com/wiki/">Wiki</a> |
-	  <a href="http://lotrproject.com/map/#layers=BTTTTTTTT">Map</a> | 
+	  <a href="http://lotrproject.com/map/#layers=BTTTTTTTT">Map</a> |
 	  <a href="http://lotrproject.com/timeline/#layers=BTT">Timeline</a>
 	  <br>
 	  <p>Tabletop role playing game based on Tolkien's works, set between "The Hobbit" and "The Lord of the Ring". This span is in the Third Age, between June 2942 and Sept 3001.</p>
 	</div>
 	<div class="hr"></div>
 	<br>
-    
-    <div id="precious">        
-        <button>+</button> <span title="Finely crafted family heirlooms or historical artifact">Precious Object Generator</span><br>
-		<ol>		
-		</ol>
+
+    <div id="newCharacter" class="group">
+		<button class="toggle">Hide</button>
+        <button class="all">All</button>
+        <button class="none">None</button>
+        <button class="create">+</button>
+		<span>Character Generator</span><br>
+		<table>
+			<tr class="characterSelect">
+				<td class="race active">Bardings</td>
+				<td class="race active">Dwarves</td>
+				<td class="race active">Elves</td>
+				<td class="race active">Hobbits</td>
+				<td class="race active">Men of Bree</td>
+				<td class="race active">Rangers</td>
+			</tr>
+			<tr class="characterSelect" style="border-bottom-style: double;">
+				<td class="calling active">Captain</td>
+				<td class="calling active">Champion</td>
+				<td class="calling active">Messenger</td>
+				<td class="calling active">Scholar</td>
+				<td class="calling active">Treasure Hunter</td>
+				<td class="calling active">Warden</td>
+			</tr>
+		</table>
+	</div>
+
+	<div id="precious" class="group">
+		<button class="toggle">Hide</button>
+        <button class="create">+</button>
+		<span title="Finely crafted family heirlooms or historical artifact">Precious Object Generator</span><br>
+		<ol></ol>
     </div>
     <br>
-	
+
 </body>
 </html>
