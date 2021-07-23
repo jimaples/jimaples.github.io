@@ -14,22 +14,101 @@ layout: default
 		  return Math.ceil(Math.random() * max);
 		}
 
-		d12 = function(extra) {
-			return roll(12);
+		d12 = function(func) {
+			var a = roll(12);
+			if (func) {
+				if (a == 11) { a = 0; }
+				var b = roll(12);
+				if (b == 11) { b = 0; }
+				console.log('d12',a,b);
+				a = func(a,b);
+				if (a == 0) { a = 11; }
+			}
+			return a;			
 		}
 
-		d6 = function(num) {
+		d6 = function(num, weary) {
 			var results = {die:[], success:0, sum:0};
 			var v = 0;
 			for (var i=0; i < num; i++) {
 				v = roll(6);
 				results.die[i] = v;
-				results.sum += v;
+				if (!weary || v > 3) {
+					results.sum += v;
+				}
 				if (v == 6) results.success += 1;
 			}
 			return results;
 		}
 
+		skillRoll = function(num, weary, favored) {
+			var results = d6(num, weary);
+			if (favored == 'yes') {
+				var v = d12(Math.max);
+			} else if (favored == 'no') {
+				var v = d12(Math.min);
+			} else {
+				var v = d12(0);
+			}
+			results.die = [v].concat(results.die);
+			if (v == 12) { 
+				results.sum = 100; // gandalf
+			} else if (v == 11) {
+				results.sum = 0;   // sauron
+			} else {
+				results.sum += v;
+			}
+			return results;
+		}
+		
+		useSuccess = function(e) {
+			console.log('useSuccess', e);
+			e.parentElement.innerHTML = '6';
+		}
+		
+		createSkillRoll = function() {
+			// Look up feat die handling: Favored Normal Ill-Favored
+			var favor = '';
+			var e = $('#skillRoll .favor.active');
+			switch(e.text()) {
+				case "Favored":     favor = 'yes'; break;
+				case "Ill-Favored": favor = 'no';  break;
+			}
+			// Look up weary status
+			var w = $('.weary.active');
+			// Look up how many die
+			var num = Number(this.innerText);
+			// Do the roll
+			var r = skillRoll(num, w.length, favor);			
+			// Display results
+			var s = '<tr>';
+			switch(r.die[0]) {
+				case 12: s += '<td><img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/></td>'; break;
+				case 11: s += '<td><img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/></td>'; break;
+				default: s += '<td>'+String(r.die[0])+'</td>';
+			}
+			for (var i = 1; i <= num; i++) {
+				if ((r.die[i] == 6) && (r.die[0] != 11)) {
+					s += '<td><img class="successDie" onclick="useSuccess(this);" ';
+					s += 'src="{{site.url}}/images/TOR_icon_success.png"/></td>';
+				} else if ((w.length) && (r.die[i] < 4)) {
+					s += '<td class="wearyDie">'+String(r.die[i])+'</td>';
+				} else {
+					s += '<td>'+String(r.die[i])+'</td>';
+				}
+			}
+			for (var i = num+1; i < 10; i++) {
+				s += '<td></td>';
+			}
+			s += '<td>Sum = '+String(r.sum)+'</td></tr>';
+			var t = $('#skillRoll table').children();
+			var td = t.children();
+			if (td.length > 11) { td[2].remove(); }
+			t.append(s);
+			console.log('createSkillRoll',{favor:e, weary:w, die:num, results:r, table:t, row:s});
+			return r.sum;
+		}
+		
 		// --------------------------------------------------------------------
 
 		// Create a random character name
@@ -261,13 +340,17 @@ layout: default
 			} else {
 				this.classList.add(s);
 			}
-		}
-
+		}				
+		
         // object for saving local variables
         var local = {options:{}, chart:0, data:0, div:0};
 
         $(document).ready(function() {
             $('button.toggle').click(toggleDisplay);
+			
+			$('#skillRoll .favor').click(function(){ var e = $('.favor.active'); e[0].classList.remove('active'); this.classList.add('active'); });
+			$('#skillRoll .weary').click(toggleSelect);
+			$('#skillRoll .dieRoll').click(createSkillRoll);
 
             $('#newCharacter .all').click(function(){  $('.characterSelect td').each(function(){ this.classList.add('active'); }) });
             $('#newCharacter .none').click(function(){ $('.characterSelect td').each(function(){ this.classList.remove('active'); }) });
@@ -299,6 +382,37 @@ layout: default
             background-color: #191919;
 			margin-bottom: 10px;
         }
+		
+		#skillRoll td {
+            text-align: center;
+		}
+		#skillRoll .active {
+            background-color: #434343;
+		}
+		#skillRoll .favor:hover {
+            background-color: #434343;
+		}
+		#skillRoll .weary:hover {
+            background-color: #434343;
+		}
+		#skillRoll .dieRoll:hover {
+            background-color: #434343;
+		}
+		#skillRoll .featDie {
+			width:  30px;
+			height: 20px;
+		}
+		#skillRoll .successDie {
+			width:  20px;
+			height: 20px;
+		}
+		#skillRoll .successDie:hover {
+            background-color: #434343;
+		}
+		#skillRoll .wearyDie {
+			color: #434343;
+		}
+		
 		#newCharacter .characterSelect td:hover {
             background-color: #434343;
 		}
@@ -336,6 +450,30 @@ layout: default
 	</div>
 	<div class="hr"></div>
 	<br>
+
+    <div id="skillRoll" class="group">
+		<button class="toggle">Hide</button>
+		<span title="Click on success icons to mark use">Skill Roll</span><br>
+		<table><tr>
+			<td colspan=3 class="favor">Favored</td>
+			<td colspan=3 class="favor active">Normal</td>
+			<td colspan=3 class="favor">Ill-Favored</td>
+			<td></td>
+			<td class="weary">Weary</td>
+		</tr><tr style="border-bottom-style: double;">
+			<td class="dieRoll">0</td>
+			<td class="dieRoll">1</td>
+			<td class="dieRoll">2</td>
+			<td class="dieRoll">3</td>
+			<td class="dieRoll">4</td>
+			<td class="dieRoll">5</td>
+			<td class="dieRoll">6</td>
+			<td class="dieRoll">7</td>
+			<td class="dieRoll">8</td>
+			<td class="dieRoll">9</td>
+			<td>Success Die</td>
+		</tr></table>
+	</div>
 
     <div id="newCharacter" class="group">
 		<button class="toggle">Hide</button>
