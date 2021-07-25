@@ -24,7 +24,7 @@ layout: default
 				a = func(a,b);
 				if (a == 0) { a = 11; }
 			}
-			return a;			
+			return a;
 		}
 
 		d6 = function(num, weary) {
@@ -51,7 +51,7 @@ layout: default
 				var v = d12(0);
 			}
 			results.die = [v].concat(results.die);
-			if (v == 12) { 
+			if (v == 12) {
 				results.sum = 100; // gandalf
 			} else if (v == 11) {
 				if (miserable) {
@@ -62,12 +62,12 @@ layout: default
 			}
 			return results;
 		}
-		
+
 		useSuccess = function(e) {
 			console.log('useSuccess', e);
 			e.parentElement.innerHTML = '6';
 		}
-		
+
 		createSkillRoll = function() {
 			// Look up feat die handling: Favored Normal Ill-Favored
 			var favor = '';
@@ -83,7 +83,7 @@ layout: default
 			// Look up how many die
 			var num = Number(this.innerText);
 			// Do the roll
-			var r = skillRoll(num, m.length, w.length, favor);			
+			var r = skillRoll(num, m.length, w.length, favor);
 			// Display results
 			var s = '<tr>';
 			switch(r.die[0]) {
@@ -112,7 +112,7 @@ layout: default
 			console.log('createSkillRoll',{favor:e, miserable:m, weary:w, die:num, results:r, table:t, row:s});
 			return r.sum;
 		}
-		
+
 		clearRolls = function() {
 			var td = $('#skillRoll table').children().children();
 			for (var i=td.length-1; i > 1; i--) {
@@ -120,7 +120,7 @@ layout: default
 			}
 			console.log('clearRolls',td);
 		}
-		
+
 		// --------------------------------------------------------------------
 
 		// Create a random character name
@@ -331,24 +331,6 @@ layout: default
 
 		// --------------------------------------------------------------------
 
-		woundRoll = function() {
-			// Roll feat die
-			var v = roll(12);
-			// Grab element
-			var e = $('#wound span').last();
-			var s = '';
-			e.html(s);			
-			switch(v) {
-				case 12: s = '<img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/> = Moderate Injury'; break;
-				case 11: s = '<img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/> = Grievous Injury'; break;
-				default: s = String(v)+' = Serious Injury'; break;
-			}			
-			setTimeout(function(e,s){ e.html(s); }, 250, e, s);
-			return v;
-		}
-
-		// --------------------------------------------------------------------
-		
 		// Create random journey event (pg 110)
 		randomJourneyEvent = function(lands) {
 			var s = '<tr>';
@@ -359,47 +341,47 @@ layout: default
 				var v = d12(Math.min);
 			} else {
 				var v = d12(0);
-			}			
+			}
 			switch(v) {
-				case 12: 
-					s += '<td title="If any targets succeeds, everyone regains 1 Hope point">'; 
-					s += '<img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/> = Joyful Sight'; 
-					s += '</td><td>0</td>'; 
+				case 12:
+					s += '<td title="If any targets succeeds, everyone regains 1 Hope point">';
+					s += '<img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/> = Joyful Sight';
+					s += '</td><td>0</td>';
 					break;
-				case 10: 
-					s += '<td title="If any targets succeeds, improvise an encouter to aid the Company">'; 
-					s += '<span>'+String(v)+'</span> = Chance-meeting'; 
-					s += '</td><td>1</td>'; 
+				case 10:
+					s += '<td title="If any targets succeeds, improvise an encouter to aid the Company">';
+					s += '<span>'+String(v)+'</span> = Chance-meeting';
+					s += '</td><td>1</td>';
 					break;
-				case 9: 
-				case 8: 
-					s += '<td title="If any targets succeeds, reduce the journey by 1 day">'; 
-					s += '<span>'+String(v)+'</span> = Short Cut'; 
-					s += '</td><td>1</td>'; 
+				case 9:
+				case 8:
+					s += '<td title="If any targets succeeds, reduce the journey by 1 day">';
+					s += '<span>'+String(v)+'</span> = Short Cut';
+					s += '</td><td>1</td>';
 					break;
-				case 7: 
-				case 6: 
-				case 5: 
-				case 4: 
-					s += '<td title="If all targets fail, add 1 day to the journey">'; 
-					s += '<span>'+String(v)+'</span> = Mishap'; 
-					s += '</td><td>2</td>'; 
+				case 7:
+				case 6:
+				case 5:
+				case 4:
+					s += '<td title="If all targets fail, add 1 day to the journey">';
+					s += '<span>'+String(v)+'</span> = Mishap';
+					s += '</td><td>2</td>';
 					break;
-				case 3: 
-				case 2: 
-					s += '<td title="If all targets fail, all targets gain 1 Shadow point">'; 
-					s += '<span>'+String(v)+'</span> = Ill Choices'; 
-					s += '</td><td>2</td>'; 
+				case 3:
+				case 2:
+					s += '<td title="If all targets fail, all targets gain 1 Shadow point">';
+					s += '<span>'+String(v)+'</span> = Ill Choices';
+					s += '</td><td>2</td>';
 					break;
-				case 1: 
-					s += '<td title="If all targets fail, everyone gains 1 Shadow point">'; 
-					s += '<span>'+String(v)+'</span> = Despair'; 
-					s += '</td><td>2</td>'; 
+				case 1:
+					s += '<td title="If all targets fail, everyone gains 1 Shadow point">';
+					s += '<span>'+String(v)+'</span> = Despair';
+					s += '</td><td>2</td>';
 					break;
-				case 11: 
-					s += '<td title="If all targets fail, all targets are wounded">'; 
-					s += '<img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/> = Grievous Injury'; 
-					s += '</td><td>3</td>'; 
+				case 11:
+					s += '<td title="If all targets fail, all targets are wounded">';
+					s += '<img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/> = Grievous Injury';
+					s += '</td><td>3</td>';
 					break;
 			}
 			// Event target
@@ -417,7 +399,7 @@ layout: default
 			console.log('randomJourneyEvent('+lands+') = '+s);
 			return s;
 		}
-		
+
 		// Add random journey event to table
 		createJourneyEvent = function() {
 			var e = $('#travelEvent .select span.active');
@@ -433,11 +415,48 @@ layout: default
 				t[i].remove();
 			}
 		}
-		
-		// Select journey region
-		selectJourneyRegion = function(e) {
+
+		// --------------------------------------------------------------------
+
+		woundRoll = function() {
+			// Roll feat die
+			var v = roll(12);
+			// Grab element
+			var e = $('#wound span').last();
+			var s = '';
+			e.html(s);
+			switch(v) {
+				case 12: s = '<img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/> = Moderate Injury'; break;
+				case 11: s = '<img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/> = Grievous Injury'; break;
+				default: s = String(v)+' = Serious Injury'; break;
+			}
+			setTimeout(function(e,s){ e.html(s); }, 250, e, s);
+			return v;
 		}
-		
+
+		// --------------------------------------------------------------------
+
+		injuryRoll = function(e) {
+			if (e.innerText == 'Standard') {
+				var v = d12(Math.max);
+			} else if (e.innerText == 'Foolish') {
+				var v = d12(Math.min);
+			} else {
+				var v = d12(0);
+			}
+			var r = $('#injury .result');
+			var s = '';
+			r.html(s);
+			switch(v) {
+				case 12: s = ': Unscathed <img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/>'; break;
+				case 11: s = ': Knocked Out <img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/>'; break;
+				// Reverse numerical results since we're rolling for badness
+				default: s = ': Bruised x'+String(11-v); break;
+			}
+			setTimeout(function(e,s){ e.html(s); }, 250, r, s);
+			console.log('injuryRoll('+e.innerText+')',e);
+		}
+
 		// --------------------------------------------------------------------
 
 		toggleDisplay = function() {
@@ -461,14 +480,14 @@ layout: default
 			} else {
 				this.classList.add(s);
 			}
-		}				
-		
+		}
+
         // object for saving local variables
         var local = {options:{}, chart:0, data:0, div:0};
 
         $(document).ready(function() {
             $('button.toggle').click(toggleDisplay);
-			
+
 			$('#skillRoll .favor').click(function(){ var e = $('.favor.active'); e[0].classList.remove('active'); this.classList.add('active'); });
 			$('#skillRoll .miserable').click(toggleSelect);
 			$('#skillRoll .weary').click(toggleSelect);
@@ -481,12 +500,14 @@ layout: default
 			$('#newCharacter .create').click(createCharacter);
 
             $('#precious .create').click(createPrecious);
-			
-			$('#wound button').click(woundRoll);
-			
+
 			$('#travelEvent .create').click(createJourneyEvent);
 			$('#travelEvent .none').click(clearJourneyEvent);
 			$('#travelEvent .select span').click(function(){ var e = $('#travelEvent .select span.active'); e[0].classList.remove('active'); this.classList.add('active'); });
+
+			$('#wound button').click(woundRoll);
+			
+			$('#injury .select span').click(function(){ injuryRoll(this); });
         });
 
         window.onload = function(){
@@ -518,7 +539,7 @@ layout: default
 			width:  30px;
 			height: 20px;
 		}
-		
+
 		#skillRoll td {
             text-align: center;
 		}
@@ -544,7 +565,7 @@ layout: default
 		#skillRoll .wearyDie {
 			color: #434343;
 		}
-		
+
 		#newCharacter .characterSelect td:hover {
             background-color: #434343;
 		}
@@ -561,14 +582,14 @@ layout: default
         #precious li:hover{
             background-color: #434343;
 		}
-		
+
 		#wound {
 			height: 25pt;
 		}
 		#wound span {
 			margin: 3pt 10pt 0 0;
 		}
-		
+
 		#travelEvent table span {
 			width: 30px;
 			display: inline-block;
@@ -585,6 +606,22 @@ layout: default
 		}
 		#travelEvent .select span:hover {
             background-color: #434343;
+		}
+
+		#injury .select {
+			float: right;
+			margin: 0 10px;
+		}
+		#injury .select span {
+			width: 70pt;
+			display: inline-block;
+			text-align: center;
+		}
+		#injury .select span:hover {
+            background-color: #434343;
+		}
+		#injury th {
+			border-right-style: double;
 		}
 
     </style>
@@ -666,7 +703,7 @@ layout: default
 	<div id="travelEvent" class="group">
 		<button class="toggle">Hide</button>
 		<button class="none">Clear</button>
-		<button class="create">+</button>		
+		<button class="create">+</button>
 		<span>Travel Events</span>
 		<div class="select">Region: <span class="active">Border</span><span>Wild</span><span>Dark</span></div>
 		<br>
@@ -709,12 +746,25 @@ layout: default
 		<span style="float:right;"></span>
     </div>
 
-	<!--div id="injury" class="group">
+	<div id="injury" class="group">
 		<button class="toggle">Hide</button>
-		<button class="create">+</button>
 		<span>Injury Roll</span>
-		<span style="float:right;"></span>
-    </div-->    
+		<span class="result"></span>
+		<div class="select">Action: <span>Standard</span><span>Hazardous</span><span>Foolish</span></div>
+		<br>
+		<table>
+			<tr><th>Injury Source</th>
+				<td title="Roll each half-hour, hero dying at 0 endurance">Cold</td>
+				<td title="Hero wounded at 0 endurance">Falling</td>
+				<td title="Roll each round, hero wounded at 0 endurance">Fire</td>
+				<td title="Roll each round, hero dying at 0 endurance">Suffocate</td>
+				<td title="Roll each day, hero dying at 0 endurance. Healing rolls lose 1d for Severe or 2d for Grevious.">Poison</td>
+			</tr>
+			<tr class="Standard"><th>Moderate Injury</th><td>Chilling Winds</td><td>Short Fall</td><td>Flame</td><td>Fumes</td><td>Bad food</td></tr>
+			<tr class="Hazardous"><th>Severe Injury</th><td>Deep Snow</td><td>Hard Fall</td><td>Large Fire</td><td>Drowning</td><td>Orc poison</td></tr>
+			<tr class="Foolish"><th>Grevious Injury</th><td>Frigid Waters</td><td>Deadly Fall</td><td>Cremation</td><td>Strangulation</td><td>Spider-poison</td></tr>
+		</table>
+    </div>
 	<br>
 
 </body>
