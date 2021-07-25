@@ -41,7 +41,7 @@ layout: default
 			return results;
 		}
 
-		skillRoll = function(num, weary, favored) {
+		skillRoll = function(num, miserable, weary, favored) {
 			var results = d6(num, weary);
 			if (favored == 'yes') {
 				var v = d12(Math.max);
@@ -54,7 +54,9 @@ layout: default
 			if (v == 12) { 
 				results.sum = 100; // gandalf
 			} else if (v == 11) {
-				results.sum = 0;   // sauron
+				if (miserable) {
+					results.sum = 0;   // sauron
+				} // else +0
 			} else {
 				results.sum += v;
 			}
@@ -74,12 +76,14 @@ layout: default
 				case "Favored":     favor = 'yes'; break;
 				case "Ill-Favored": favor = 'no';  break;
 			}
+			// Look up miserable status
+			var m = $('.miserable.active');
 			// Look up weary status
 			var w = $('.weary.active');
 			// Look up how many die
 			var num = Number(this.innerText);
 			// Do the roll
-			var r = skillRoll(num, w.length, favor);			
+			var r = skillRoll(num, m.length, w.length, favor);			
 			// Display results
 			var s = '<tr>';
 			switch(r.die[0]) {
@@ -105,8 +109,16 @@ layout: default
 			var td = t.children();
 			if (td.length > 11) { td[2].remove(); }
 			t.append(s);
-			console.log('createSkillRoll',{favor:e, weary:w, die:num, results:r, table:t, row:s});
+			console.log('createSkillRoll',{favor:e, miserable:m, weary:w, die:num, results:r, table:t, row:s});
 			return r.sum;
+		}
+		
+		clearRolls = function() {
+			var td = $('#skillRoll table').children().children();
+			for (var i=td.length-1; i > 1; i--) {
+				td[i].remove();
+			}
+			console.log('clearRolls',td);
 		}
 		
 		// --------------------------------------------------------------------
@@ -319,6 +331,24 @@ layout: default
 
 		// --------------------------------------------------------------------
 
+		woundRoll = function() {
+			// Roll feat die
+			var v = roll(12);
+			// Grab element
+			var e = $('#wound span').last();
+			var s = '';
+			e.html(s);			
+			switch(v) {
+				case 12: s = '<img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/> = Moderate Injury'; break;
+				case 11: s = '<img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/> = Grievous Injury'; break;
+				default: s = String(v)+' = Serious Injury'; break;
+			}			
+			setTimeout(function(e,s){ e.html(s); }, 250, e, s);
+			return v;
+		}
+
+		// --------------------------------------------------------------------
+
 		toggleDisplay = function() {
 			// get the ordered list
 		    var l = this.parentElement.children.length - 1;
@@ -349,8 +379,10 @@ layout: default
             $('button.toggle').click(toggleDisplay);
 			
 			$('#skillRoll .favor').click(function(){ var e = $('.favor.active'); e[0].classList.remove('active'); this.classList.add('active'); });
+			$('#skillRoll .miserable').click(toggleSelect);
 			$('#skillRoll .weary').click(toggleSelect);
 			$('#skillRoll .dieRoll').click(createSkillRoll);
+			$('#clearRolls').click(clearRolls);
 
             $('#newCharacter .all').click(function(){  $('.characterSelect td').each(function(){ this.classList.add('active'); }) });
             $('#newCharacter .none').click(function(){ $('.characterSelect td').each(function(){ this.classList.remove('active'); }) });
@@ -358,6 +390,8 @@ layout: default
 			$('#newCharacter .create').click(createCharacter);
 
             $('#precious .create').click(createPrecious);
+			
+			$('#wound button').click(woundRoll);
         });
 
         window.onload = function(){
@@ -390,6 +424,9 @@ layout: default
             background-color: #434343;
 		}
 		#skillRoll .favor:hover {
+            background-color: #434343;
+		}
+		#skillRoll .miserable:hover {
             background-color: #434343;
 		}
 		#skillRoll .weary:hover {
@@ -432,6 +469,18 @@ layout: default
         #precious li:hover{
             background-color: #434343;
 		}
+		
+		#wound {
+			height: 25pt;
+		}
+		#wound span {
+			margin: 3pt 10pt 0 0;
+		}
+		#wound img {
+			width:  30px;
+			height: 20px;
+		}
+		
 
     </style>
 </head>
@@ -453,12 +502,13 @@ layout: default
 
     <div id="skillRoll" class="group">
 		<button class="toggle">Hide</button>
+		<button id="clearRolls">Clear</button>
 		<span title="Click on success icons to mark use">Skill Roll</span><br>
 		<table><tr>
-			<td colspan=3 class="favor">Favored</td>
-			<td colspan=3 class="favor active">Normal</td>
+			<td colspan=2 class="favor">Favored</td>
+			<td colspan=2 class="favor active">Normal</td>
 			<td colspan=3 class="favor">Ill-Favored</td>
-			<td></td>
+			<td colspan=3 class="miserable">Miserable</td>
 			<td class="weary">Weary</td>
 		</tr><tr style="border-bottom-style: double;">
 			<td class="dieRoll">0</td>
@@ -506,6 +556,12 @@ layout: default
         <button class="create">+</button>
 		<span title="Finely crafted family heirlooms or historical artifact">Precious Object Generator</span><br>
 		<ol></ol>
+    </div>
+
+	<div id="wound" class="group">
+		<button class="create">+</button>
+		<span>Wound Roll</span>
+		<span style="float:right;"></span>
     </div>
     <br>
 
