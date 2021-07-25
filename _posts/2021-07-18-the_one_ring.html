@@ -348,6 +348,97 @@ layout: default
 		}
 
 		// --------------------------------------------------------------------
+		
+		// Create random journey event (pg 110)
+		randomJourneyEvent = function(lands) {
+			var s = '<tr>';
+			// Event type
+			if (lands == 'Border') {
+				var v = d12(Math.max);
+			} else if (lands == 'Dark') {
+				var v = d12(Math.min);
+			} else {
+				var v = d12(0);
+			}			
+			switch(v) {
+				case 12: 
+					s += '<td title="If any targets succeeds, everyone regains 1 Hope point">'; 
+					s += '<img class="featDie" src="{{site.url}}/images/TOR_icon_gandalf.png"/> = Joyful Sight'; 
+					s += '</td><td>0</td>'; 
+					break;
+				case 10: 
+					s += '<td title="If any targets succeeds, improvise an encouter to aid the Company">'; 
+					s += '<span>'+String(v)+'</span> = Chance-meeting'; 
+					s += '</td><td>1</td>'; 
+					break;
+				case 9: 
+				case 8: 
+					s += '<td title="If any targets succeeds, reduce the journey by 1 day">'; 
+					s += '<span>'+String(v)+'</span> = Short Cut'; 
+					s += '</td><td>1</td>'; 
+					break;
+				case 7: 
+				case 6: 
+				case 5: 
+				case 4: 
+					s += '<td title="If all targets fail, add 1 day to the journey">'; 
+					s += '<span>'+String(v)+'</span> = Mishap'; 
+					s += '</td><td>2</td>'; 
+					break;
+				case 3: 
+				case 2: 
+					s += '<td title="If all targets fail, all targets gain 1 Shadow point">'; 
+					s += '<span>'+String(v)+'</span> = Ill Choices'; 
+					s += '</td><td>2</td>'; 
+					break;
+				case 1: 
+					s += '<td title="If all targets fail, everyone gains 1 Shadow point">'; 
+					s += '<span>'+String(v)+'</span> = Despair'; 
+					s += '</td><td>2</td>'; 
+					break;
+				case 11: 
+					s += '<td title="If all targets fail, all targets are wounded">'; 
+					s += '<img class="featDie" src="{{site.url}}/images/TOR_icon_sauron.png"/> = Grievous Injury'; 
+					s += '</td><td>3</td>'; 
+					break;
+			}
+			// Event target
+			var t = roll(6);
+			s += '<td>'+String(t)+' = ';
+			switch(t) {
+				case 6:
+				case 5: s += 'The Guide</td><td>Lore/Travel';       break;
+				case 4: s +=   'Hunters</td><td>Athletics/Hunting'; break;
+				case 3: s += 'Look-outs</td><td>Awareness/Scan';    break;
+				case 2: s +=    'Scouts</td><td>Craft/Explore';     break;
+				case 1: s +=    'Random</td><td>Travel';            break;
+			}
+			s += '</td></tr>';
+			console.log('randomJourneyEvent('+lands+') = '+s);
+			return s;
+		}
+		
+		// Add random journey event to table
+		createJourneyEvent = function() {
+			var e = $('#travelEvent .select span.active');
+			var s = randomJourneyEvent(e.text());
+			var t = $('#travelEvent tbody');
+			t.append(s);
+		}
+
+		// Clear journey events from table
+		clearJourneyEvent = function() {
+			var t = $('#travelEvent tbody').children();
+			for (var i=t.length-1; i > 0; i--) {
+				t[i].remove();
+			}
+		}
+		
+		// Select journey region
+		selectJourneyRegion = function(e) {
+		}
+		
+		// --------------------------------------------------------------------
 
 		toggleDisplay = function() {
 			// get the ordered list
@@ -382,7 +473,7 @@ layout: default
 			$('#skillRoll .miserable').click(toggleSelect);
 			$('#skillRoll .weary').click(toggleSelect);
 			$('#skillRoll .dieRoll').click(createSkillRoll);
-			$('#clearRolls').click(clearRolls);
+			$('#skillRoll .none').click(clearRolls);
 
             $('#newCharacter .all').click(function(){  $('.characterSelect td').each(function(){ this.classList.add('active'); }) });
             $('#newCharacter .none').click(function(){ $('.characterSelect td').each(function(){ this.classList.remove('active'); }) });
@@ -392,6 +483,10 @@ layout: default
             $('#precious .create').click(createPrecious);
 			
 			$('#wound button').click(woundRoll);
+			
+			$('#travelEvent .create').click(createJourneyEvent);
+			$('#travelEvent .none').click(clearJourneyEvent);
+			$('#travelEvent .select span').click(function(){ var e = $('#travelEvent .select span.active'); e[0].classList.remove('active'); this.classList.add('active'); });
         });
 
         window.onload = function(){
@@ -416,12 +511,16 @@ layout: default
             background-color: #191919;
 			margin-bottom: 10px;
         }
+		.active {
+            background-color: #434343;
+		}
+		img.featDie {
+			width:  30px;
+			height: 20px;
+		}
 		
 		#skillRoll td {
             text-align: center;
-		}
-		#skillRoll .active {
-            background-color: #434343;
 		}
 		#skillRoll .favor:hover {
             background-color: #434343;
@@ -435,10 +534,6 @@ layout: default
 		#skillRoll .dieRoll:hover {
             background-color: #434343;
 		}
-		#skillRoll .featDie {
-			width:  30px;
-			height: 20px;
-		}
 		#skillRoll .successDie {
 			width:  20px;
 			height: 20px;
@@ -451,9 +546,6 @@ layout: default
 		}
 		
 		#newCharacter .characterSelect td:hover {
-            background-color: #434343;
-		}
-		#newCharacter .characterSelect td.active {
             background-color: #434343;
 		}
 		#newCharacter .characterSelect td.active:hover {
@@ -476,11 +568,24 @@ layout: default
 		#wound span {
 			margin: 3pt 10pt 0 0;
 		}
-		#wound img {
-			width:  30px;
-			height: 20px;
-		}
 		
+		#travelEvent table span {
+			width: 30px;
+			display: inline-block;
+			text-align: center;
+		}
+		#travelEvent .select {
+			float: right;
+			margin: 0 10px;
+		}
+		#travelEvent .select span {
+			width: 50pt;
+			display: inline-block;
+			text-align: center;
+		}
+		#travelEvent .select span:hover {
+            background-color: #434343;
+		}
 
     </style>
 </head>
@@ -502,7 +607,7 @@ layout: default
 
     <div id="skillRoll" class="group">
 		<button class="toggle">Hide</button>
-		<button id="clearRolls">Clear</button>
+		<button class="none">Clear</button>
 		<span title="Click on success icons to mark use">Skill Roll</span><br>
 		<table><tr>
 			<td colspan=2 class="favor">Favored</td>
@@ -562,6 +667,18 @@ layout: default
 		<button class="create">+</button>
 		<span>Wound Roll</span>
 		<span style="float:right;"></span>
+    </div>
+
+	<div id="travelEvent" class="group">
+		<button class="toggle">Hide</button>
+		<button class="none">Clear</button>
+		<button class="create">+</button>		
+		<span>Travel Events</span>
+		<div class="select">Region: <span class="active">Border</span><span>Wild</span><span>Dark</span></div>
+		<br>
+		<table>
+			<tr style="border-bottom-style: double;"><th>Event</th><td title="+1 in Autumn/Winter">Fatigue</th><th>Target(s)</th><th>Skills</th></tr>
+		</table>
     </div>
     <br>
 
