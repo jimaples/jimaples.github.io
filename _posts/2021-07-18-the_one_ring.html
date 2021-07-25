@@ -593,12 +593,12 @@ layout: default
 
 	<div>
 	  <span font-weight="bolder">The One Ring</span> 2nd Edition
-	  by <a href="https://freeleaguepublishing.com/en/">/Free League</a> |
-	  <a href="https://forum.frialigan.se/viewforum.php?f=129">Forum</a> |
-	  <a href="https://www.kickstarter.com/projects/1192053011/the-one-ring-roleplaying-game-second-edition/description">Kickstarter</a> |
-	  LOTR <a href="https://lotr.fandom.com/wiki/">Wiki</a> |
-	  <a href="http://lotrproject.com/map/#layers=BTTTTTTTT">Map</a> |
-	  <a href="http://lotrproject.com/timeline/#layers=BTT">Timeline</a>
+	  by <a target="_blank" href="https://freeleaguepublishing.com/en/">/Free League</a> |
+	  <a target="_blank" href="https://forum.frialigan.se/viewforum.php?f=129">Forum</a> |
+	  <a target="_blank" href="https://www.kickstarter.com/projects/1192053011/the-one-ring-roleplaying-game-second-edition/description">Kickstarter</a> |
+	  LOTR <a target="_blank" href="https://lotr.fandom.com/wiki/">Wiki</a> |
+	  <a target="_blank" href="http://lotrproject.com/map/#layers=BTTTTTTTT">Map</a> |
+	  <a target="_blank" href="http://lotrproject.com/timeline/#layers=BTT">Timeline</a>
 	  <br>
 	  <p>Tabletop role playing game based on Tolkien's works, set between "The Hobbit" and "The Lord of the Ring". This span is in the Third Age, between June 2942 and Sept 3001.</p>
 	</div>
@@ -663,12 +663,6 @@ layout: default
 		<ol></ol>
     </div>
 
-	<div id="wound" class="group">
-		<button class="create">+</button>
-		<span>Wound Roll</span>
-		<span style="float:right;"></span>
-    </div>
-
 	<div id="travelEvent" class="group">
 		<button class="toggle">Hide</button>
 		<button class="none">Clear</button>
@@ -680,7 +674,48 @@ layout: default
 			<tr style="border-bottom-style: double;"><th>Event</th><td title="+1 in Autumn/Winter">Fatigue</th><th>Target(s)</th><th>Skills</th></tr>
 		</table>
     </div>
-    <br>
+
+	<div id="descriptions" class="group">
+		<button class="toggle">Show</button>
+		<span>Description Generators</span>
+		<a style="float:right; margin-right:10px;" target="_blank" href="http://autorolltables.github.io/">Auto Roll Tables</a>
+		<br>
+		<table class="hidden">
+			<tr>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/personality-descriptions.php">Personality</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/backstory-descriptions.php">Backstory</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/character-descriptions.php">Appearance</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/tavern-descriptions.php">Tavern</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/quest-descriptions.php">Quest</a></td>
+			</tr><tr>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/farm-descriptions.php">Farm</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/town-descriptions.php">Town</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/city-descriptions.php">City</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/house-descriptions.php">House</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/castle-descriptions.php">Castle</a></td>
+			</tr><tr>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/forest-descriptions.php">Forest</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/plant-descriptions.php">Plant</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/monument-descriptions.php">Monument</a></td>
+				<td><a target="_blank" href="https://www.fantasynamegenerators.com/dungeon-descriptions.php">Dungeon</a></td>
+				<td></td>
+			</tr>
+		</table>
+    </div>
+
+	<div id="wound" class="group">
+		<button class="create">+</button>
+		<span>Wound Roll</span>
+		<span style="float:right;"></span>
+    </div>
+
+	<!--div id="injury" class="group">
+		<button class="toggle">Hide</button>
+		<button class="create">+</button>
+		<span>Injury Roll</span>
+		<span style="float:right;"></span>
+    </div-->    
+	<br>
 
 </body>
 </html>
